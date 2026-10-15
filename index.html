@@ -449,12 +449,17 @@ const G = {
     };
   },
   kubikwurzel() {
-    const a = pick([R(2, 5), R(2, 5), R(2, 5), 10, 0.1, 0.2]);   // kleine Zahlen, ohne Taschenrechner
-    const V = Number((a ** 3).toPrecision(10));
+    // kleine Zahlen, ohne Taschenrechner; Dezimalfälle nur etwa jede sechste Aufgabe
+    const r = Math.random(), a = r < 1 / 6 ? pick([0.1, 0.2]) : r < 0.25 ? 10 : R(2, 5);
+    const V = Number((a ** 3).toPrecision(10)), dez = a < 1, g = Math.round(a * 10);
     return {
       title: 'Kubikwurzel', q: `Bestimme.<div class="big">${cb(fmt(V))} = ?</div>`, type: 'num', ans: a,
-      hint: `Welche Zahl ergibt dreimal mit sich selbst multipliziert ${fmt(V)}?`,
-      sol: [`${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `also ${cb(fmt(V))} = ${fmt(a)}`]
+      hint: dez ? `Denk an ${cb(g ** 3)} = ${g}. Drei Nachkommastellen unter der Wurzel ergeben eine Nachkommastelle im Ergebnis.`
+        : `Welche Zahl ergibt dreimal mit sich selbst multipliziert ${fmt(V)}?`,
+      sol: dez ? [`Ohne Komma: ${cb(g ** 3)} = ${g}, denn ${g} · ${g} · ${g} = ${g ** 3}`,
+                  `${fmt(V)} hat drei Nachkommastellen → das Ergebnis hat eine: ${fmt(a)}`,
+                  `Probe: ${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`]
+        : [`${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `also ${cb(fmt(V))} = ${fmt(a)}`]
     };
   },
   figurQuadrate() {
