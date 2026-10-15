@@ -139,7 +139,7 @@ sup{font-size:.7em}
       <div class="rule"><b>Zusammenfassen:</b> nur gleiche Wurzeln! 4<span class="rt">√<span class="rad">3</span></span> + 2<span class="rt">√<span class="rad">3</span></span> = 6<span class="rt">√<span class="rad">3</span></span></div>
       <h2 style="margin-top:14px">So wird gewertet</h2>
       <ul class="tight">
-        <li>Falsche Antwort: <b>Strafkringel</b> (+20 Sekunden). Du siehst den Lösungsweg und bekommst eine neue, ähnliche Aufgabe.</li>
+        <li>Falsche Antwort: <b>Strafkringel</b> (+20 Sekunden). Du siehst den Lösungsweg und bekommst eine neue, ähnliche Aufgabe. Solange du den Lösungsweg liest, ist die Uhr angehalten.</li>
         <li>Ein <b>Tipp</b> kostet 10 Sekunden.</li>
         <li>Beim 6. Strafkringel wirst du disqualifiziert und segelst die Regatta neu.</li>
         <li>🥇 bis 1 Kringel · 🥈 bis 3 · 🥉 bis 5. Wer die Sollzeit überschreitet, rutscht eine Stufe tiefer.</li>
@@ -634,9 +634,9 @@ const RACES = [
     gens: ['sciExp', 'sciVoll', 'sciZuruck', 'technisch', 'einheiten', 'sciExp', 'sciVoll'] },
   { name: 'Bodensee-Woche', sub: 'Quadrat- und Kubikwurzeln, Quadrate und Würfel', n: 7, soll: 14 * 60,
     gens: ['wurzelGanz', 'wurzelDez', 'einschachteln', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate'] },
-  { name: 'Rund um die Reichenau', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 18 * 60,
+  { name: 'Rund um die Reichenau', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
     gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'figurQuadrate'] },
-  { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 22 * 60,
+  { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 30 * 60,
     gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'teilweiseZusammen'] }
 ];
 const SAIL_COLORS = [['Weiß', '#f8fafc'], ['Rot', '#e4572e'], ['Orange', '#f97316'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57'],
@@ -811,7 +811,8 @@ function kringelAnim() {
 
 /* ---------- Rennen ---------- */
 let st = null, timer = null;
-const elapsed = () => Math.floor((Date.now() - st.t0) / 1000) + st.penalty;
+// Während der Lösungsweg nach einem Fehler angezeigt wird, steht die Uhr (pauseStart gesetzt).
+const elapsed = () => Math.floor(((st.pauseStart || Date.now()) - st.t0 - st.paused) / 1000) + st.penalty;
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 function updateBar() {
   const r = RACES[st.lvl];
@@ -819,12 +820,12 @@ function updateBar() {
   $('cBuoy').textContent = `Boje ${Math.min(st.i + 1, r.n)}/${r.n}`;
   $('cKringel').textContent = `Strafkringel: ${'⭕'.repeat(st.kringel)}${'○'.repeat(Math.max(0, MAX_KRINGEL - st.kringel))}`;
   const t = elapsed();
-  $('cTime').textContent = `⏱ ${mmss(t)} / ${mmss(r.soll)}`;
+  $('cTime').textContent = `${st.pauseStart ? '⏸' : '⏱'} ${mmss(t)} / ${mmss(r.soll)}`;
   $('cTime').style.color = t > r.soll ? 'var(--bad)' : '';
 }
 function startRace(lvl) {
   const r = RACES[lvl];
-  st = { lvl, i: 0, kringel: 0, tipps: 0, penalty: 0, t0: Date.now(), order: shuffle(r.gens.slice()), task: null, busy: true };
+  st = { lvl, i: 0, kringel: 0, tipps: 0, penalty: 0, paused: 0, pauseStart: null, t0: Date.now(), order: shuffle(r.gens.slice()), task: null, busy: true };
   drawScene(r.n);
   show('vRace');
   $('taskCard').innerHTML = `<div class="waiting">Startschuss! Dein Boot segelt zur ersten Boje …</div>`;
@@ -838,6 +839,7 @@ const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfel
   'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
 function nextTask() {
+  if (st.pauseStart) { st.paused += Date.now() - st.pauseStart; st.pauseStart = null; }
   st.task = genFor(st.i); st.busy = false; st.hintShown = false;
   renderTask();
 }
@@ -913,14 +915,14 @@ function submit(mcVal) {
       else { moveBoat(buoyX(st.i, r.n) - 48); $('taskCard').innerHTML = `<div class="waiting">Weiter zur Boje ${st.i + 1} …</div>`; setTimeout(nextTask, 1600); }
     }, 1300);
   } else {
-    st.kringel++; st.penalty += 20; updateBar(); kringelAnim();
+    st.kringel++; st.penalty += 20; st.pauseStart = Date.now(); updateBar(); kringelAnim();
     const sol = `<ol class="sol">${t.sol.map(s => `<li>${s}</li>`).join('')}</ol>`;
     if (st.kringel > MAX_KRINGEL) {
       $('fb').innerHTML = `<div class="fb bad">❌ Leider falsch. So geht's:${sol}</div><div class="btns"><button class="primary" id="dnf">Weiter</button></div>`;
       $('dnf').onclick = () => finish(true);
       return;
     }
-    $('fb').innerHTML = `<div class="fb bad">❌ <b>Strafkringel!</b> (+20 s) So wäre es richtig gewesen:${sol}</div>
+    $('fb').innerHTML = `<div class="fb bad">❌ <b>Strafkringel!</b> (+20 s) So wäre es richtig gewesen:${sol}<small class="muted">⏸ Die Uhr ist angehalten, bis du weiterklickst – lies den Lösungsweg in Ruhe.</small></div>
       <div class="btns"><button class="primary" id="again">Neue Aufgabe an dieser Boje ➜</button></div>`;
     $('again').onclick = nextTask; $('again').focus();
   }
