@@ -697,9 +697,7 @@ function drawScene(n) {
     </defs>
     <rect width="1000" height="104" fill="url(#sky)"/>
     <circle cx="880" cy="32" r="18" fill="#ffd166"/>
-    <path d="M0 78 Q90 48 200 70 T430 58 T660 72 T860 54 T1000 66 V104 H0Z" fill="#9cc58a"/>
-    <path d="M0 92 Q180 76 360 90 T720 86 T1000 84 V104 H0Z" fill="#6fa862"/>
-    <g fill="#f8fafc" stroke="#64748b" stroke-width="1"><rect x="292" y="70" width="12" height="18"/><path d="M290 70 L298 56 L306 70Z" fill="#b45309"/></g>
+    ${shoreSVG()}
     <rect y="102" width="1000" height="108" fill="url(#lake)"/>
     ${waves}
     <g transform="translate(${START_X - 20},${BOAT_Y})"><line x1="0" y1="10" x2="0" y2="-40" stroke="#334155" stroke-width="2.5"/><path d="M0 -40 L18 -33 L0 -26Z" fill="#facc15"/><text x="0" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">START</text></g>
@@ -716,6 +714,54 @@ function drawScene(n) {
       </g>
       ${save.name ? `<text x="0" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${esc(save.name)}</text>` : ''}
     </g>`;
+}
+/* Ufer bei Gaienhofen: Hügel, Dorf, Schule mit Schloss und Kirchturm (vereinfachte Umrisse) */
+function shoreSVG() {
+  let rnd = 7; const r = () => (rnd = (rnd * 9301 + 49297) % 233280) / 233280;   // fester Zufall → immer gleiches Dorf
+  const hillY = x => 52 + 10 * Math.sin(x / 140) + 6 * Math.sin(x / 57);
+  let houses = '';
+  for (let x = 20; x < 990; x += 22 + r() * 16) {
+    if (x > 360 && x < 640 && r() < .55) continue;
+    const y = hillY(x) + 6 + r() * 22, w = 13 + r() * 9, h = 7 + r() * 4;
+    houses += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${r() < .7 ? '#f6efe3' : '#e9e2d4'}" stroke="#9ca3af" stroke-width=".5"/>
+      <path d="M${x - 2} ${y} L${x + w / 2} ${y - 6 - r() * 3} L${x + w + 2} ${y}Z" fill="${r() < .75 ? '#c2562f' : '#8b5e3c'}"/>`;
+  }
+  let trees = '';
+  const tree = (x, y, rr, c) => `<circle cx="${x}" cy="${y}" r="${rr}" fill="${c}"/>`;
+  for (let x = 0; x < 1000; x += 9 + r() * 10) {
+    if (x > 375 && x < 620) continue;                       // Blick auf die Schule frei lassen
+    trees += tree(x, 93 - r() * 6, 6 + r() * 6, r() < .5 ? '#4f8a3c' : '#3f7a33');
+  }
+  for (let i = 0; i < 6; i++) trees += tree(380 + i * 46 + r() * 10, 98, 5 + r() * 3, '#4f8a3c');
+  let win = '';
+  for (let f = 0; f < 4; f++) for (let k = 0; k < 9; k++)
+    win += `<rect x="${532 + k * 9}" y="${58 + f * 9}" width="3.5" height="5" fill="#94a3b8"/>`;
+  return `
+    <path d="M0 40 Q150 22 300 36 T620 30 T1000 38 V60 H0Z" fill="#b9d3a6" opacity=".7"/>
+    <path d="M0 ${hillY(0)} ${Array.from({ length: 51 }, (_, i) => `L${i * 20} ${hillY(i * 20)}`).join(' ')} V104 H0Z" fill="#9cc58a"/>
+    ${houses}
+    <!-- Kirchturm -->
+    <rect x="497" y="34" width="12" height="44" fill="#f8fafc" stroke="#94a3b8" stroke-width=".8"/>
+    <circle cx="503" cy="42" r="2.6" fill="none" stroke="#475569" stroke-width=".8"/>
+    <rect x="501" y="50" width="4" height="7" fill="#64748b"/>
+    <path d="M495 34 L503 8 L511 34Z" fill="#475569"/>
+    <!-- Schulgebäude mit Flachdach -->
+    <rect x="388" y="70" width="88" height="22" fill="#e5e7eb" stroke="#9ca3af" stroke-width=".8"/>
+    <rect x="388" y="66" width="88" height="5" fill="#cbd5e1"/>
+    <rect x="392" y="76" width="80" height="5" fill="#64748b"/>
+    <rect x="392" y="85" width="80" height="4" fill="#94a3b8"/>
+    <rect x="470" y="78" width="40" height="15" fill="#f1f5f9" stroke="#9ca3af" stroke-width=".8"/>
+    <rect x="474" y="82" width="32" height="4" fill="#94a3b8"/>
+    <!-- Schloss Gaienhofen -->
+    <rect x="526" y="54" width="86" height="40" fill="#fbfbf8" stroke="#9ca3af" stroke-width=".8"/>
+    <path d="M522 55 L536 38 L602 38 L616 55Z" fill="#d2693c" stroke="#9a4a26" stroke-width=".8"/>
+    <rect x="548" y="42" width="6" height="6" fill="#fbfbf8"/><rect x="584" y="42" width="6" height="6" fill="#fbfbf8"/>
+    ${win}
+    <rect x="566" y="85" width="7" height="9" fill="#64748b"/>
+    <!-- Wiese und Ufer -->
+    <path d="M0 96 Q250 90 500 96 T1000 95 V104 H0Z" fill="#7fb069"/>
+    ${trees}
+    <path d="M0 101 Q300 98 600 102 T1000 101 V105 H0Z" fill="#d6cfb4"/>`;
 }
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function moveBoat(x, y = BOAT_Y, fast = false) {
