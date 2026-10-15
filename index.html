@@ -30,9 +30,14 @@ small{font-size:.85rem}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin:18px 0 6px}
 
 /* Start */
-.boats{display:flex;gap:10px;flex-wrap:wrap;margin:.4rem 0 1rem}
-.boatpick{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;min-width:78px}
-.boatpick.sel{outline:3px solid var(--sea);border-color:var(--sea)}
+.werft{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:.4rem 0 1rem}
+.werft .preview{flex:0 0 120px;height:130px;background:linear-gradient(#e0f2fe 70%,#5cb0e0 70%);border-radius:12px;border:1px solid var(--line);display:grid;place-items:center}
+.werft .rows{flex:1;min-width:220px}
+.crow{margin:.15rem 0 .5rem}
+.crow small{display:block;font-weight:600;color:var(--muted);margin-bottom:3px}
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.sw{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #cbd5e1}
+.sw.sel{outline:3px solid var(--sea);outline-offset:2px}
 label{font-weight:600;font-size:.92rem}
 input[type=text]{font:inherit;padding:.5rem .6rem;border:1px solid var(--line);border-radius:8px;width:100%;max-width:280px;display:block;margin:.3rem 0 1rem}
 .rule{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
@@ -114,8 +119,11 @@ sup{font-size:.7em}
       <h1 style="margin-bottom:0">⛵ Wurzel-Regatta</h1>
       <p class="muted" style="margin:.1rem 0 .6rem;font-weight:600">Hochzahlen und Wurzeln auf dem Untersee</p>
       <p>Segle auf dem Untersee fünf Regatten – von der Clubregatta bis zur Bodensee-Meisterschaft. An jeder Boje wartet eine Aufgabe zu <b>Potenzen</b> und <b>Wurzeln</b>. Richtig gelöst? Dann rundest du die Boje. Falsch? Dann musst du einen <b>Strafkringel</b> segeln!</p>
-      <label>Wähle die Farbe deines Segels</label>
-      <div class="boats" id="boatPicker"></div>
+      <label>Gestalte dein Boot</label>
+      <div class="werft">
+        <div class="preview" id="boatPreview"></div>
+        <div class="rows" id="boatPicker"></div>
+      </div>
       <label for="boatName">Name deines Bootes (freiwillig)</label>
       <input type="text" id="boatName" maxlength="20" placeholder="z. B. Wurzelwind">
       <button class="primary" id="toRaces">Zu den Regatten ➜</button>
@@ -631,15 +639,23 @@ const RACES = [
   { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 22 * 60,
     gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'teilweiseZusammen'] }
 ];
-const SAILS = [['Rot', '#e4572e'], ['Blau', '#2563eb'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57']];
+const SAIL_COLORS = [['Weiß', '#f8fafc'], ['Rot', '#e4572e'], ['Orange', '#f97316'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57'],
+  ['Türkis', '#14b8a6'], ['Blau', '#2563eb'], ['Lila', '#7c3aed'], ['Pink', '#ec4899'], ['Schwarz', '#1f2937']];
+const HULL_COLORS = [['Weiß', '#ffffff'], ['Grau', '#94a3b8'], ['Holz', '#a16207'], ['Dunkelblau', '#1e3a8a'], ['Rot', '#b91c1c'],
+  ['Grün', '#166534'], ['Gelb', '#facc15'], ['Schwarz', '#111827']];
+const PARTS = [['main', 'Großsegel (hinten am Mast)', SAIL_COLORS], ['jib', 'Vorsegel (vorne)', SAIL_COLORS], ['hull', 'Rumpf', HULL_COLORS]];
 const MEDALS = { gold: '🥇', silber: '🥈', bronze: '🥉', ziel: '🏁' };
 const RANK = ['gold', 'silber', 'bronze', 'ziel'];
 const MAX_KRINGEL = 5;
 
 /* ---------- Speicher (nur dieses Gerät) ---------- */
 const KEY = 'potenzRegatta.v1';
-let save = { sail: 0, name: '', best: {} };
+let save = { boat: { main: '#e4572e', jib: '#f8fafc', hull: '#ffffff' }, name: '', best: {} };
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) save = Object.assign(save, s); } catch (e) {}
+if (typeof save.sail === 'number') {   // alter Speicherstand: nur eine Segelfarbe
+  const old = ['#e4572e', '#2563eb', '#f4b400', '#2e8b57'][save.sail] || '#e4572e';
+  save.boat = { main: old, jib: old, hull: '#ffffff' }; delete save.sail;
+}
 const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
 const ALLE = new URLSearchParams(location.search).has('alle');   // Lehrkraft: ?alle schaltet alles frei
 const unlocked = i => ALLE || i === 0 || !!save.best[i - 1];
@@ -649,19 +665,24 @@ function show(id) {
   ['vStart', 'vRaces', 'vRace', 'vResult'].forEach(v => $(v).classList.toggle('hidden', v !== id));
   window.scrollTo(0, 0);
 }
-function boatSVG(color, w = 60) {
-  return `<svg viewBox="-34 -70 68 84" width="${w}"><path d="M-30 0 L30 0 L22 11 L-24 11 Z" fill="#fff" stroke="#334155" stroke-width="2"/>
-  <line x1="0" y1="0" x2="0" y2="-64" stroke="#334155" stroke-width="2.5"/>
-  <path d="M3 -62 L3 -5 L30 -5 Z" fill="${color}"/><path d="M-3 -58 L-3 -7 L-26 -7 Z" fill="${color}" opacity=".6"/></svg>`;
+// Boot fährt nach rechts: Bug rechts, Vorsegel vor dem Mast, Großsegel dahinter
+function boatParts(c = save.boat) {
+  return `<path d="M-28 0 L34 -1 L22 11 L-25 11 Z" fill="${c.hull}" stroke="#334155" stroke-width="2"/>
+    <line x1="0" y1="0" x2="0" y2="-64" stroke="#334155" stroke-width="2.5"/>
+    <path d="M-3 -62 L-3 -5 L-27 -5 Z" fill="${c.main}" stroke="#475569" stroke-width=".8"/>
+    <path d="M3 -58 L3 -7 L29 -7 Z" fill="${c.jib}" stroke="#475569" stroke-width=".8"/>`;
 }
+const boatSVG = (w = 60) => `<svg viewBox="-34 -70 72 84" width="${w}">${boatParts()}</svg>`;
 function renderStart() {
-  $('boatPicker').innerHTML = SAILS.map(([n, c], i) =>
-    `<button class="boatpick ${i === save.sail ? 'sel' : ''}" data-i="${i}">${boatSVG(c, 46)}<small>${n}</small></button>`).join('');
+  $('boatPreview').innerHTML = boatSVG(96);
+  $('boatPicker').innerHTML = PARTS.map(([key, label, cols]) => `<div class="crow"><small>${label}</small><div class="swatches">${
+    cols.map(([n, c]) => `<button class="sw ${save.boat[key] === c ? 'sel' : ''}" data-part="${key}" data-c="${c}" title="${n}" aria-label="${label}: ${n}" style="background:${c}"></button>`).join('')
+  }</div></div>`).join('');
   $('boatName').value = save.name || '';
 }
 $('boatPicker').addEventListener('click', e => {
-  const b = e.target.closest('.boatpick'); if (!b) return;
-  save.sail = +b.dataset.i; persist(); renderStart();
+  const b = e.target.closest('.sw'); if (!b) return;
+  save.boat[b.dataset.part] = b.dataset.c; persist(); renderStart();
 });
 $('boatName').addEventListener('input', e => { save.name = e.target.value.trim(); persist(); });
 $('toRaces').onclick = () => { renderRaces(); show('vRaces'); };
@@ -685,7 +706,6 @@ $('raceList').addEventListener('click', e => {
 const BOAT_Y = 158, START_X = 55, FINISH_X = 950;
 const buoyX = (i, n) => 190 + i * (690 / Math.max(1, n - 1));
 function drawScene(n) {
-  const color = SAILS[save.sail][1];
   let waves = '';
   for (let i = 0; i < 9; i++) {
     const y = 118 + (i % 3) * 30, x = (i * 117) % 1000;
@@ -716,10 +736,7 @@ function drawScene(n) {
     <g id="boat" style="transform:translate(${START_X}px,${BOAT_Y}px)">
       <g id="boatSpin" style="transform-box:fill-box;transform-origin:center">
         <g class="bob" style="transform-box:fill-box;transform-origin:center bottom">
-          <path d="M-30 0 L30 0 L22 11 L-24 11 Z" fill="#fff" stroke="#334155" stroke-width="2"/>
-          <line x1="0" y1="0" x2="0" y2="-64" stroke="#334155" stroke-width="2.5"/>
-          <path d="M3 -62 L3 -5 L30 -5 Z" fill="${color}"/>
-          <path d="M-3 -58 L-3 -7 L-26 -7 Z" fill="${color}" opacity=".6"/>
+          ${boatParts()}
         </g>
       </g>
       ${save.name ? `<text x="0" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${esc(save.name)}</text>` : ''}
