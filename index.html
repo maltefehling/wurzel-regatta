@@ -449,7 +449,7 @@ const G = {
     };
   },
   kubikwurzel() {
-    const a = pick([R(2, 10), 0.1, 0.2, 0.5, 20, 30]);
+    const a = pick([R(2, 5), R(2, 5), R(2, 5), 10, 0.1, 0.2]);   // kleine Zahlen, ohne Taschenrechner
     const V = Number((a ** 3).toPrecision(10));
     return {
       title: 'Kubikwurzel', q: `Bestimme.<div class="big">${cb(fmt(V))} = ?</div>`, type: 'num', ans: a,
@@ -812,7 +812,7 @@ function startRace(lvl) {
 }
 // Taschenrechner erlaubt überall dort, wo sonst schriftliches Rechnen die Zeit frisst.
 // Ohne Taschenrechner nur, wo die Regel bzw. das Kopfwissen selbst geübt wird und die Zahlen klein bleiben.
-const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate',
+const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'figurQuadrate',
   'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
 function nextTask() {
