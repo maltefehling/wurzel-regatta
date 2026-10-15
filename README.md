@@ -1,10 +1,10 @@
-# ⛵ Potenz-Regatta
+# ⛵ Wurzel-Regatta
 
 Lern-App für **Potenzen, Zehnerpotenzen und Wurzeln** (Klasse 9, Realschule).
 Die Schülerinnen und Schüler segeln fünf Regatten auf dem Untersee. An jeder Boje wartet eine Aufgabe –
 richtig gelöst wird die Boje gerundet, falsch gelöst gibt es einen Strafkringel, den Lösungsweg und eine neue, ähnliche Aufgabe.
 
-**Spielen:** https://maltefehling.github.io/potenz-regatta/
+**Spielen:** https://maltefehling.github.io/wurzel-regatta/
 
 | Regatta | Inhalt |
 |---|---|
