@@ -74,6 +74,9 @@ ul.tight li{margin:.2rem 0}
 @media (max-width:700px){.task{grid-template-columns:1fr}}
 .sketch svg{width:100%;height:auto;max-height:240px}
 .qtitle{font-size:.85rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.trbadge{display:inline-block;margin:.35rem 0 .1rem;padding:.2rem .65rem;border-radius:999px;font-size:.88rem;font-weight:700}
+.trbadge.ja{background:#e0f2fe;color:#075985;border:1px solid #7dd3fc}
+.trbadge.nein{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
 .q{font-size:1.15rem;margin:.3rem 0 .8rem}
 .big{font-size:1.45rem}
 .answer{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1.3rem;margin:.4rem 0}
@@ -132,7 +135,8 @@ sup{font-size:.7em}
         <li>Ein <b>Tipp</b> kostet 10 Sekunden.</li>
         <li>Beim 6. Strafkringel wirst du disqualifiziert und segelst die Regatta neu.</li>
         <li>🥇 bis 1 Kringel · 🥈 bis 3 · 🥉 bis 5. Wer die Sollzeit überschreitet, rutscht eine Stufe tiefer.</li>
-        <li>Jede beendete Regatta schaltet die nächste frei. Taschenrechner bleibt in der Tasche!</li>
+        <li>Jede beendete Regatta schaltet die nächste frei.</li>
+        <li>Bei jeder Aufgabe steht, ob du rechnen darfst mit <span class="trbadge ja">🧮 Taschenrechner</span> oder <span class="trbadge nein">✏️ ohne Taschenrechner</span>.</li>
       </ul>
     </div>
   </div>
@@ -272,7 +276,7 @@ const G = {
     const [b, e] = c, v = Math.pow(b, e);
     const prod = Array(e).fill(pb(b)).join(' · ');
     return {
-      title: 'Potenzwert', q: `Berechne ohne Taschenrechner.<div class="big">${pw(pb(b), e)} = ?</div>`, type: 'num', ans: v,
+      title: 'Potenzwert', q: `Berechne.<div class="big">${pw(pb(b), e)} = ?</div>`, type: 'num', ans: v,
       hint: `Der Exponent ${e} sagt dir, wie oft du die Basis ${pb(b)} mit sich selbst multiplizierst.` + (b < 0 ? ' Achte auf das Vorzeichen: gerade Anzahl Minus ergibt Plus.' : '') + (!Number.isInteger(b) ? ' Zähle am Ende die Nachkommastellen.' : ''),
       sol: [`${pw(pb(b), e)} = ${prod}`, `= ${fmt(v)}`]
     };
@@ -398,7 +402,7 @@ const G = {
   wurzelGanz() {
     const n = R(4, 20);
     return {
-      title: 'Quadratwurzel', q: `Bestimme ohne Taschenrechner.<div class="big">${sq(n * n)} = ?</div>`, type: 'num', ans: n,
+      title: 'Quadratwurzel', q: `Bestimme.<div class="big">${sq(n * n)} = ?</div>`, type: 'num', ans: n,
       hint: `Welche Zahl ergibt mit sich selbst multipliziert ${n * n}?`,
       sol: [`${n} · ${n} = ${n * n}`, `also ${sq(n * n)} = ${n}`]
     };
@@ -407,7 +411,7 @@ const G = {
     const n = R(2, 15), k = pick([-1, -2, 1, 2]);
     const r = n * Math.pow(10, k), rad = Number((r * r).toPrecision(10));
     return {
-      title: 'Wurzel aus Dezimalzahlen', q: `Bestimme ohne Taschenrechner.<div class="big">${sq(fmt(rad))} = ?</div>`, type: 'num', ans: r,
+      title: 'Wurzel aus Dezimalzahlen', q: `Bestimme.<div class="big">${sq(fmt(rad))} = ?</div>`, type: 'num', ans: r,
       hint: k < 0 ? `Denk an ${sq(n * n)} = ${n}. Das Ergebnis hat halb so viele Nachkommastellen wie die Zahl unter der Wurzel.` : `Denk an ${sq(n * n)} = ${n}. Zwei Nullen unter der Wurzel ergeben eine Null im Ergebnis.`,
       sol: [`${fmt(r)} · ${fmt(r)} = ${fmt(rad)}`, `also ${sq(fmt(rad))} = ${fmt(r)}`]
     };
@@ -423,7 +427,7 @@ const G = {
     };
   },
   quadratFlaeche() {
-    const a = pick([R(3, 15), R(3, 15), pick([1.5, 2.5, 3.5, 4.5, 0.8, 1.2])]);
+    const a = pick([R(3, 25), R(11, 99) / 10, R(11, 99) / 10, pick([1.5, 2.5, 3.5, 4.5, 0.8, 1.2])]);
     const A = Number((a * a).toPrecision(10));
     const ctx = pick(['Ein quadratisches Sonnensegel über dem Steg', 'Eine quadratische Badeplattform im See', 'Ein quadratisches Startfeld aus Bojen', 'Ein quadratischer Bootsanhänger-Stellplatz']);
     return {
@@ -434,7 +438,7 @@ const G = {
     };
   },
   wuerfelVolumen() {
-    const a = pick([R(2, 10), R(2, 10), pick([1.5, 0.5, 0.2, 20])]);
+    const a = pick([R(2, 15), R(12, 49) / 10, R(12, 49) / 10, pick([1.5, 0.5, 0.2, 20])]);
     const V = Number((a * a * a).toPrecision(10)), u = a >= 20 ? 'cm' : pick(['cm', 'dm']);
     const ctx = pick(['Ein würfelförmiger Ankerstein', 'Eine würfelförmige Proviantkiste', 'Ein würfelförmiger Schwimmkörper einer Boje']);
     return {
@@ -448,34 +452,34 @@ const G = {
     const a = pick([R(2, 10), 0.1, 0.2, 0.5, 20, 30]);
     const V = Number((a ** 3).toPrecision(10));
     return {
-      title: 'Kubikwurzel', q: `Bestimme ohne Taschenrechner.<div class="big">${cb(fmt(V))} = ?</div>`, type: 'num', ans: a,
+      title: 'Kubikwurzel', q: `Bestimme.<div class="big">${cb(fmt(V))} = ?</div>`, type: 'num', ans: a,
       hint: `Welche Zahl ergibt dreimal mit sich selbst multipliziert ${fmt(V)}?`,
       sol: [`${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `also ${cb(fmt(V))} = ${fmt(a)}`]
     };
   },
   figurQuadrate() {
-    const cells = pick(FIGUREN), k = cells.length, a = R(2, 9), A = k * a * a;
+    const cells = pick(FIGUREN), k = cells.length, a = pick([R(2, 12), R(12, 45) / 10]), A = Number((k * a * a).toPrecision(10));
     return {
-      title: 'Gebilde aus Quadraten', q: `Ein Steg-Belag besteht aus <b>${k} gleich großen</b> quadratischen Platten. Zusammen sind sie <b>${A} dm²</b> groß. Wie lang ist die Seite einer Platte?`,
-      sketch: skFigur(cells, `gesamt ${A} dm²`), type: 'num', ans: a, post: 'dm',
+      title: 'Gebilde aus Quadraten', q: `Ein Steg-Belag besteht aus <b>${k} gleich großen</b> quadratischen Platten. Zusammen sind sie <b>${fmt(A)} dm²</b> groß. Wie lang ist die Seite einer Platte?`,
+      sketch: skFigur(cells, `gesamt ${fmt(A)} dm²`), type: 'num', ans: a, post: 'dm',
       hint: 'Rechne zuerst aus, wie groß eine einzelne Platte ist. Dann ziehst du die Wurzel.',
-      sol: [`Eine Platte: ${A} : ${k} = ${a * a} dm²`, `a = ${sq(a * a)} = ${a} dm`]
+      sol: [`Eine Platte: ${fmt(A)} : ${k} = ${fmt(a * a)} dm²`, `a = ${sq(fmt(a * a))} = ${fmt(a)} dm`]
     };
   },
 
   /* ===== Regatta 4: Wurzelgesetze & Gebilde ===== */
   wurzelProdukt() {
-    const k = pick([2, 3, 5, 6, 7]), p = R(1, 3), q = R(2, 4), a = k * p * p, b = k * q * q;
+    const k = pick([2, 3, 5, 6, 7]), p = 1, q = R(2, 3), a = k * p * p, b = k * q * q;
     return {
-      title: 'Wurzeln multiplizieren', q: `Berechne ohne Taschenrechner.<div class="big">${sq(a)} · ${sq(b)} = ?</div>`, type: 'num', ans: k * p * q,
+      title: 'Wurzeln multiplizieren', q: `Berechne.<div class="big">${sq(a)} · ${sq(b)} = ?</div>`, type: 'num', ans: k * p * q,
       hint: 'Fasse zu einer Wurzel zusammen: √a · √b = √(a · b). Das Produkt ist eine Quadratzahl.',
       sol: [`${sq(a)} · ${sq(b)} = ${sq(`${a} · ${b}`)} = ${sq(a * b)}`, `= ${k * p * q}`]
     };
   },
   wurzelQuotient() {
-    const k = pick([2, 3, 5, 6, 7, 10]), n = R(2, 9), a = k * n * n;
+    const k = pick([2, 3, 5, 10]), n = R(2, 9), a = k * n * n;
     return {
-      title: 'Wurzeln dividieren', q: `Berechne ohne Taschenrechner.<div class="big">${sq(a)} : ${sq(k)} = ?</div>`, type: 'num', ans: n,
+      title: 'Wurzeln dividieren', q: `Berechne.<div class="big">${sq(a)} : ${sq(k)} = ?</div>`, type: 'num', ans: n,
       hint: 'Fasse zu einer Wurzel zusammen: √a : √b = √(a : b).',
       sol: [`${sq(a)} : ${sq(k)} = ${sq(`${a} : ${k}`)} = ${sq(n * n)}`, `= ${n}`]
     };
@@ -510,7 +514,7 @@ const G = {
     };
   },
   wuerfelOberflaeche() {
-    const a = pick([R(2, 12), 1.5, 2.5]), O = Number((6 * a * a).toPrecision(10));
+    const a = pick([R(2, 15), R(12, 49) / 10, 1.5, 2.5]), O = Number((6 * a * a).toPrecision(10));
     return {
       title: 'Würfel aus der Oberfläche', q: `Eine würfelförmige Kiste für Segelzubehör soll ringsum lackiert werden. Ihre Oberfläche beträgt <b>${fmt(O)} dm²</b>. Wie lang ist eine Kante?`,
       sketch: skWuerfel(`O = ${fmt(O)} dm²`), type: 'num', ans: a, post: 'dm',
@@ -580,7 +584,7 @@ const G = {
     const k = pick([2, 3, 5]);
     let p, q; do { p = R(1, 4); q = R(2, 5); } while (p === q);
     return {
-      title: 'Wurzel mal Klammer', q: `Berechne ohne Taschenrechner.<div class="big">${sq(k)} · (${sq(k * p * p)} + ${sq(k * q * q)})</div>`, type: 'num', ans: k * (p + q),
+      title: 'Wurzel mal Klammer', q: `Berechne.<div class="big">${sq(k)} · (${sq(k * p * p)} + ${sq(k * q * q)})</div>`, type: 'num', ans: k * (p + q),
       hint: `Multipliziere ${sq(k)} mit jedem Summanden in der Klammer und fasse jeweils zu einer Wurzel zusammen.`,
       sol: [`= ${sq(`${k} · ${k * p * p}`)} + ${sq(`${k} · ${k * q * q}`)}`, `= ${sq(k * k * p * p)} + ${sq(k * k * q * q)}`, `= ${k * p} + ${k * q} = ${k * (p + q)}`]
     };
@@ -806,7 +810,11 @@ function startRace(lvl) {
   setTimeout(() => moveBoat(buoyX(0, r.n) - 48), 300);
   setTimeout(nextTask, 1900);
 }
-function genFor(i) { return G[st.order[i % st.order.length]](); }
+// Taschenrechner erlaubt überall dort, wo sonst schriftliches Rechnen die Zeit frisst.
+// Ohne Taschenrechner nur, wo die Regel bzw. das Kopfwissen selbst geübt wird und die Zahlen klein bleiben.
+const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate',
+  'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel']);
+function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
 function nextTask() {
   st.task = genFor(st.i); st.busy = false; st.hintShown = false;
   renderTask();
@@ -823,6 +831,7 @@ function renderTask() {
       ${t.sketch ? `<div class="sketch">${t.sketch}</div>` : ''}
       <div>
         <div class="qtitle">Boje ${st.i + 1} · ${t.title}</div>
+        <span class="trbadge ${t.tr ? 'ja' : 'nein'}">${t.tr ? '🧮 Taschenrechner erlaubt' : '✏️ ohne Taschenrechner'}</span>
         <div class="q">${t.q}</div>
         ${input}
         <div class="btns">${t.type !== 'mc' ? '<button class="primary" id="check">Prüfen ✓</button>' : ''}<button id="hint">💡 Tipp (+10 s)</button></div>
