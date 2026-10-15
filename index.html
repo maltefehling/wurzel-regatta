@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potenz-Regatta</title>
+<meta name="description" content="Segelregatta auf dem Untersee: Potenzen, Zehnerpotenzen und Wurzeln für Klasse 9 (Realschule).">
+<style>
+:root{
+  --bg:#eef4f8; --card:#ffffff; --ink:#1d2b36; --muted:#5b6b78; --line:#d5e0e8;
+  --sea:#1f6fa8; --sea2:#4aa3d8; --accent:#e8742a; --ok:#2e8b57; --bad:#c0392b;
+  --soft:#f5f9fc; --blue:#2563eb; --red:#c2410c; --violet:#7c3aed;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:1.7rem;margin:.2rem 0 .6rem}
+h2{font-size:1.2rem;margin:.2rem 0 .6rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.55rem .9rem}
+button.primary{background:var(--sea);border-color:var(--sea);color:#fff;font-weight:600}
+button.primary:hover{background:#185d8d}
+button:disabled{opacity:.45;cursor:default}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+small{font-size:.85rem}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin:18px 0 6px}
+
+/* Start */
+.boats{display:flex;gap:10px;flex-wrap:wrap;margin:.4rem 0 1rem}
+.boatpick{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;min-width:78px}
+.boatpick.sel{outline:3px solid var(--sea);border-color:var(--sea)}
+label{font-weight:600;font-size:.92rem}
+input[type=text]{font:inherit;padding:.5rem .6rem;border:1px solid var(--line);border-radius:8px;width:100%;max-width:280px;display:block;margin:.3rem 0 1rem}
+.rule{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
+.rule b{color:var(--sea)}
+ul.tight{margin:.3rem 0;padding-left:1.2rem}
+ul.tight li{margin:.2rem 0}
+
+/* Regatten */
+.races{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.race{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:14px}
+.race .num{flex:0 0 42px;height:42px;border-radius:50%;background:var(--sea);color:#fff;display:grid;place-items:center;font-weight:700;font-size:1.1rem}
+.race.locked{opacity:.5}
+.race.locked .num{background:#9aa9b5}
+.race .medal{margin-left:auto;font-size:1.6rem;min-width:2rem;text-align:center}
+.race small{display:block}
+
+/* Rennen */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:.3rem .8rem;font-size:.9rem;font-weight:600}
+.bar .spacer{flex:1}
+#scene{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
+#boat{transition:transform 1.5s ease-in-out}
+#boat.fast{transition:transform .8s ease-in-out}
+.bob{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(3px) rotate(1.5deg)}}
+.spin{animation:kringel 1.6s ease-in-out}
+@keyframes kringel{
+  0%{transform:translate(0,0) scaleX(1)}
+  25%{transform:translate(22px,14px) scaleX(.2)}
+  50%{transform:translate(0,26px) scaleX(-1)}
+  75%{transform:translate(-22px,14px) scaleX(-.2)}
+  100%{transform:translate(0,0) scaleX(1)}}
+.wave{animation:wave 3s ease-in-out infinite alternate}
+@keyframes wave{from{transform:translateX(-8px)}to{transform:translateX(8px)}}
+.buoy.done .buoytop{fill:#2e8b57}
+
+.task{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:18px;margin-top:12px;align-items:start}
+.task.nosketch{grid-template-columns:1fr}
+@media (max-width:700px){.task{grid-template-columns:1fr}}
+.sketch svg{width:100%;height:auto;max-height:240px}
+.qtitle{font-size:.85rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.q{font-size:1.15rem;margin:.3rem 0 .8rem}
+.big{font-size:1.45rem}
+.answer{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1.3rem;margin:.4rem 0}
+.answer input{font:inherit;font-size:1.25rem;width:7.5em;padding:.35rem .5rem;border:2px solid var(--line);border-radius:8px;text-align:center}
+.answer input.s{width:3.6em}
+.answer input:focus{outline:none;border-color:var(--sea)}
+.mc{display:flex;flex-wrap:wrap;gap:10px;margin:.4rem 0}
+.mc button{font-size:1.2rem;min-width:5.5rem;padding:.6rem 1rem}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:.8rem}
+.fb{margin-top:12px;border-radius:10px;padding:10px 14px}
+.fb.ok{background:#e7f6ec;border:1px solid #b6e2c4}
+.fb.bad{background:#fdecea;border:1px solid #f3b8b1}
+.fb.hint{background:#fff7e6;border:1px solid #f5d59a}
+.fb.warn{background:#eef4ff;border:1px solid #bcd0f7}
+.sol{margin:.4rem 0 0;padding-left:1.1rem}
+.sol li{margin:.15rem 0}
+sup{font-size:.7em}
+.rt{white-space:nowrap}
+.rt .rad{border-top:1.5px solid currentColor;padding:0 .12em;margin-left:.05em}
+.waiting{color:var(--muted);font-style:italic;text-align:center;padding:16px}
+
+/* Ergebnis */
+.result{text-align:center}
+.result .medalbig{font-size:4.5rem;line-height:1}
+.stats{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:12px 0}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============ START ============ -->
+<section id="vStart">
+  <div class="grid2">
+    <div class="card">
+      <h1>⛵ Potenz-Regatta</h1>
+      <p>Segle auf dem Untersee fünf Regatten – von der Clubregatta bis zur Bodensee-Meisterschaft. An jeder Boje wartet eine Aufgabe zu <b>Potenzen</b> und <b>Wurzeln</b>. Richtig gelöst? Dann rundest du die Boje. Falsch? Dann musst du einen <b>Strafkringel</b> segeln!</p>
+      <label>Wähle die Farbe deines Segels</label>
+      <div class="boats" id="boatPicker"></div>
+      <label for="boatName">Name deines Bootes (freiwillig)</label>
+      <input type="text" id="boatName" maxlength="20" placeholder="z. B. Wurzelwind">
+      <button class="primary" id="toRaces">Zu den Regatten ➜</button>
+    </div>
+    <div class="card">
+      <h2>Spickzettel</h2>
+      <div class="rule"><b>Potenz:</b> 3<sup>4</sup> = 3 · 3 · 3 · 3 = 81 &nbsp;(Basis 3, Exponent 4)</div>
+      <div class="rule"><b>Zehnerpotenz:</b> 52 000 = 5,2 · 10<sup>4</sup> &nbsp;·&nbsp; 0,0031 = 3,1 · 10<sup>−3</sup></div>
+      <div class="rule"><b>Quadratwurzel:</b> <span class="rt">√<span class="rad">49</span></span> = 7, denn 7<sup>2</sup> = 49 &nbsp;·&nbsp; <b>Kubikwurzel:</b> <span class="rt">∛<span class="rad">64</span></span> = 4, denn 4<sup>3</sup> = 64</div>
+      <div class="rule"><b>Quadrat:</b> Seite a = <span class="rt">√<span class="rad">A</span></span> &nbsp;·&nbsp; <b>Würfel:</b> Kante a = <span class="rt">∛<span class="rad">V</span></span></div>
+      <div class="rule"><b>Wurzelgesetze:</b> <span class="rt">√<span class="rad">a</span></span> · <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a · b</span></span> &nbsp;·&nbsp; <span class="rt">√<span class="rad">a</span></span> : <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a : b</span></span></div>
+      <div class="rule"><b>Teilweise Wurzel ziehen:</b> <span class="rt">√<span class="rad">50</span></span> = <span class="rt">√<span class="rad">25 · 2</span></span> = 5<span class="rt">√<span class="rad">2</span></span></div>
+      <div class="rule"><b>Zusammenfassen:</b> nur gleiche Wurzeln! 4<span class="rt">√<span class="rad">3</span></span> + 2<span class="rt">√<span class="rad">3</span></span> = 6<span class="rt">√<span class="rad">3</span></span></div>
+      <h2 style="margin-top:14px">So wird gewertet</h2>
+      <ul class="tight">
+        <li>Falsche Antwort: <b>Strafkringel</b> (+20 Sekunden). Du siehst den Lösungsweg und bekommst eine neue, ähnliche Aufgabe.</li>
+        <li>Ein <b>Tipp</b> kostet 10 Sekunden.</li>
+        <li>Beim 6. Strafkringel wirst du disqualifiziert und segelst die Regatta neu.</li>
+        <li>🥇 bis 1 Kringel · 🥈 bis 3 · 🥉 bis 5. Wer die Sollzeit überschreitet, rutscht eine Stufe tiefer.</li>
+        <li>Jede beendete Regatta schaltet die nächste frei. Taschenrechner bleibt in der Tasche!</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REGATTEN ============ -->
+<section id="vRaces" class="hidden">
+  <div class="bar"><h1 style="margin:0">Regattakalender</h1><span class="spacer"></span><button id="backStart">← Boot & Spickzettel</button></div>
+  <div class="races" id="raceList"></div>
+</section>
+
+<!-- ============ RENNEN ============ -->
+<section id="vRace" class="hidden">
+  <div class="bar">
+    <span class="chip" id="cRace"></span>
+    <span class="chip" id="cBuoy"></span>
+    <span class="chip" id="cKringel"></span>
+    <span class="chip" id="cTime"></span>
+    <span class="spacer"></span>
+    <button id="giveUp">Aufgeben</button>
+  </div>
+  <svg id="scene" viewBox="0 0 1000 210" role="img" aria-label="Regattabahn auf dem Untersee"></svg>
+  <div class="card" style="margin-top:12px" id="taskCard"></div>
+</section>
+
+<!-- ============ ERGEBNIS ============ -->
+<section id="vResult" class="hidden">
+  <div class="card result" id="resultCard"></div>
+</section>
+
+<footer>Potenz-Regatta · eigene Aufgaben, zufällig erzeugt · läuft komplett offline im Browser · keine Daten verlassen das Gerät</footer>
+</main>
+
+<script>
+"use strict";
+/* ---------- Hilfsfunktionen ---------- */
+const $ = id => document.getElementById(id);
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+const eq = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b));
+
+function fmt(x) {
+  x = Number(x.toPrecision(12));
+  const neg = x < 0; x = Math.abs(x);
+  let s = x.toFixed(10).replace(/0+$/, '').replace(/\.$/, '');
+  let [i, d] = s.split('.');
+  if (i.length > 4) i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (neg ? '−' : '') + i + (d ? ',' + d : '');
+}
+function parseNum(s) {
+  s = String(s).trim().replace(/[\s  ']/g, '').replace(/^[−–]/, '-').replace(/^\+/, '');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  return /^-?\d*\.?\d+$/.test(s) ? Number(s) : NaN;
+}
+const sq = x => `<span class="rt">√<span class="rad">${x}</span></span>`;
+const cb = x => `<span class="rt">∛<span class="rad">${x}</span></span>`;
+const pw = (b, e) => `${b}<sup>${e}</sup>`;
+const pb = b => (b < 0 || !Number.isInteger(b)) ? `(${fmt(b)})` : fmt(b);   // Basis ggf. mit Klammer
+const surd = (c, r) => (c === 1 ? '' : fmt(c)) + sq(r);
+const tenPow = e => `10<sup>${fmt(e)}</sup>`;
+const SQFREE = [2, 3, 5, 6, 7, 10, 11];
+
+/* ---------- Skizzen ---------- */
+const svgWrap = (w, h, inner) => `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">${inner}</svg>`;
+function skQuadrat(label, side = 'a = ?') {
+  return svgWrap(240, 210, `
+    <rect x="50" y="20" width="150" height="150" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+    <text x="125" y="102" text-anchor="middle" font-size="19" font-weight="600" fill="#1d2b36">${label}</text>
+    <text x="125" y="196" text-anchor="middle" font-size="18" fill="#c2410c" font-weight="700">${side}</text>`);
+}
+function skWuerfel(label, side = 'a = ?') {
+  return svgWrap(240, 220, `
+    <polygon points="40,70 160,70 160,190 40,190" fill="#bfdbfe" stroke="#2563eb" stroke-width="2.5"/>
+    <polygon points="40,70 85,30 205,30 160,70" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <polygon points="160,70 205,30 205,150 160,190" fill="#93c5fd" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="100" y="135" text-anchor="middle" font-size="17" font-weight="600" fill="#1d2b36">${label}</text>
+    <text x="100" y="212" text-anchor="middle" font-size="17" fill="#c2410c" font-weight="700">${side}</text>`);
+}
+function skFigur(cells, label) {
+  const s = 40, maxX = Math.max(...cells.map(c => c[0])) + 1, maxY = Math.max(...cells.map(c => c[1])) + 1;
+  const w = maxX * s + 40, h = maxY * s + 60;
+  const rects = cells.map(([x, y]) => `<rect x="${20 + x * s}" y="${20 + y * s}" width="${s}" height="${s}" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>`).join('');
+  return svgWrap(w, h, rects + `<text x="${w / 2}" y="${h - 12}" text-anchor="middle" font-size="16" font-weight="600" fill="#1d2b36">${label}</text>`);
+}
+function skKaro(p, q) {
+  const n = p + q, s = Math.min(34, 200 / n), o = 14, size = n * s + 2 * o;
+  let g = '';
+  for (let i = 0; i <= n; i++) {
+    g += `<line x1="${o}" y1="${o + i * s}" x2="${o + n * s}" y2="${o + i * s}" stroke="#cbd5e1"/>`;
+    g += `<line x1="${o + i * s}" y1="${o}" x2="${o + i * s}" y2="${o + n * s}" stroke="#cbd5e1"/>`;
+  }
+  const P = [[p, 0], [n, p], [q, n], [0, q]].map(([x, y]) => `${o + x * s},${o + y * s}`).join(' ');
+  return svgWrap(size, size, g + `<polygon points="${P}" fill="rgba(37,99,235,.18)" stroke="#2563eb" stroke-width="3"/>`);
+}
+function skZweiQuadrate(A1, A2, s1, s2) {
+  const k = 150 / (s1 + s2), a = s1 * k, b = s2 * k, base = 30 + Math.max(a, b);
+  return svgWrap(240, base + 50, `
+    <rect x="45" y="${base - a}" width="${a}" height="${a}" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <rect x="${45 + a}" y="${base - b}" width="${b}" height="${b}" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="${45 + a / 2}" y="${base - a / 2 + 6}" text-anchor="middle" font-size="14" font-weight="600">${A1}</text>
+    <text x="${45 + a + b / 2}" y="${base - b / 2 + 6}" text-anchor="middle" font-size="14" font-weight="600">${A2}</text>
+    <line x1="45" y1="${base + 14}" x2="${45 + a + b}" y2="${base + 14}" stroke="#c2410c" stroke-width="2"/>
+    <line x1="45" y1="${base + 8}" x2="45" y2="${base + 20}" stroke="#c2410c" stroke-width="2"/>
+    <line x1="${45 + a + b}" y1="${base + 8}" x2="${45 + a + b}" y2="${base + 20}" stroke="#c2410c" stroke-width="2"/>
+    <text x="${45 + (a + b) / 2}" y="${base + 38}" text-anchor="middle" font-size="16" font-weight="700" fill="#c2410c">Länge = ?</text>`);
+}
+function skRechteck(la, lb, inner = 'A = ?') {
+  return svgWrap(260, 190, `
+    <rect x="40" y="25" width="180" height="110" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+    <text x="130" y="86" text-anchor="middle" font-size="18" font-weight="700" fill="#c2410c">${inner}</text>
+    <text x="130" y="162" text-anchor="middle" font-size="17">${la}</text>
+    <text x="232" y="86" font-size="17">${lb}</text>`);
+}
+const FIGUREN = [
+  [[0, 0], [1, 0], [2, 0]],
+  [[0, 0], [0, 1], [1, 1], [2, 1]],
+  [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]],
+  [[0, 0], [1, 0], [2, 0], [1, 1]],
+  [[0, 0], [1, 0], [0, 1], [1, 1], [2, 1], [3, 1]],
+  [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2]],
+  [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
+];
+
+/* ---------- Aufgabengeneratoren ----------
+   Jede Aufgabe: { title, q, sketch, type: 'num'|'mc'|'sci'|'surd', ...Lösung, hint, sol:[Schritte] } */
+const G = {
+  /* ===== Regatta 1: Potenzen ===== */
+  potenzwert() {
+    const c = pick([
+      () => [2, R(3, 7)], () => [3, R(2, 4)], () => [4, R(2, 3)], () => [5, R(2, 3)], () => [R(6, 9), 2],
+      () => [10, R(3, 6)], () => [-2, R(2, 5)], () => [-3, R(2, 3)], () => [pick([0.1, 0.2, 0.3, 0.5]), R(2, 3)],
+      () => [pick([1.1, 1.2, 1.5]), 2]
+    ])();
+    const [b, e] = c, v = Math.pow(b, e);
+    const prod = Array(e).fill(pb(b)).join(' · ');
+    return {
+      title: 'Potenzwert', q: `Berechne ohne Taschenrechner.<div class="big">${pw(pb(b), e)} = ?</div>`, type: 'num', ans: v,
+      hint: `Der Exponent ${e} sagt dir, wie oft du die Basis ${pb(b)} mit sich selbst multiplizierst.` + (b < 0 ? ' Achte auf das Vorzeichen: gerade Anzahl Minus ergibt Plus.' : '') + (!Number.isInteger(b) ? ' Zähle am Ende die Nachkommastellen.' : ''),
+      sol: [`${pw(pb(b), e)} = ${prod}`, `= ${fmt(v)}`]
+    };
+  },
+  minusFalle() {
+    const b = R(2, 5), e = pick([2, 4]), withPar = Math.random() < .5;
+    const v = withPar ? Math.pow(-b, e) : -Math.pow(b, e);
+    const term = withPar ? pw(`(−${b})`, e) : `−${pw(b, e)}`;
+    return {
+      title: 'Achtung, Minus!', q: `Berechne.<div class="big">${term} = ?</div>`, type: 'num', ans: v,
+      hint: withPar ? 'Mit Klammer gehört das Minus zur Basis – es wird mitpotenziert.' : 'Ohne Klammer gehört das Minus nicht zur Basis. Erst potenzieren, dann das Minus davor.',
+      sol: withPar ? [`${term} = ${Array(e).fill(`(−${b})`).join(' · ')} = ${fmt(v)}`] : [`${term} = −(${Array(e).fill(b).join(' · ')}) = ${fmt(v)}`]
+    };
+  },
+  produktPotenz() {
+    const b = R(2, 9), e = R(3, 6);
+    while (e === b) return G.produktPotenz();
+    const opts = shuffle([pw(b, e), pw(e, b), `${b} · ${e}`, pw(b, e + 1)]);
+    return {
+      title: 'Potenzschreibweise', q: `Ein Segelclub schreibt Produkte kurz. Welche Potenz passt?<div class="big">${Array(e).fill(b).join(' · ')}</div>`,
+      type: 'mc', options: opts, ans: pw(b, e),
+      hint: 'Die Zahl, die multipliziert wird, ist die Basis. Wie oft sie vorkommt, steht im Exponenten.',
+      sol: [`Die ${b} kommt ${e}-mal als Faktor vor.`, `Also: ${pw(b, e)}`]
+    };
+  },
+  exponent() {
+    const [b, e] = pick([[2, R(3, 8)], [3, R(2, 5)], [5, R(2, 4)], [10, R(3, 7)], [4, R(2, 4)]]);
+    return {
+      title: 'Exponent gesucht', q: `Welcher Exponent fehlt?<div class="big">${b}<sup>□</sup> = ${fmt(Math.pow(b, e))}</div>`,
+      type: 'num', ans: e, pre: '□ =',
+      hint: `Multipliziere ${b} · ${b} · ${b} · … und zähle mit, bis ${fmt(Math.pow(b, e))} herauskommt.`,
+      sol: [`${Array(e).fill(b).join(' · ')} = ${fmt(Math.pow(b, e))}`, `Das sind ${e} Faktoren, also □ = ${e}.`]
+    };
+  },
+  groesstePotenz() {
+    const pool = [[2, 3], [3, 2], [2, 4], [4, 2], [2, 5], [5, 2], [3, 3], [2, 6], [6, 2], [4, 3], [3, 4], [10, 2], [2, 7], [7, 2], [5, 3], [1, 9], [9, 1], [2, 1]];
+    let set;
+    do { set = shuffle(pool.slice()).slice(0, 4); }
+    while (new Set(set.map(([b, e]) => b ** e)).size < 4);
+    const best = set.reduce((m, x) => (x[0] ** x[1] > m[0] ** m[1] ? x : m));
+    return {
+      title: 'Wer segelt vorne?', q: 'Vier Boote tragen Potenzen als Segelnummer. Welches Boot hat die <b>größte</b> Zahl?',
+      type: 'mc', options: set.map(([b, e]) => pw(b, e)), ans: pw(best[0], best[1]),
+      hint: 'Berechne jeden Potenzwert. Vorsicht: 1 hoch irgendwas bleibt 1.',
+      sol: set.map(([b, e]) => `${pw(b, e)} = ${b ** e}`).concat([`Am größten: ${pw(best[0], best[1])}`])
+    };
+  },
+
+  /* ===== Regatta 2: Zehnerpotenzen ===== */
+  sciExp() {
+    const big = Math.random() < .6;
+    const m = pick([1.5, 2.4, 3.07, 4.8, 5.25, 6.1, 7.3, 8.06, 9.2, 2.75, 3.6]);
+    const e = big ? R(3, 9) : -R(2, 6);
+    const n = m * Math.pow(10, e);
+    return {
+      title: 'Zehnerpotenz', q: `Ergänze den Exponenten.<div class="big">${fmt(n)} = ${fmt(m)} · 10<sup>□</sup></div>`,
+      type: 'num', ans: e, pre: '□ =',
+      hint: big ? 'Zähle, um wie viele Stellen das Komma nach links rückt, bis nur noch eine Ziffer vor dem Komma steht.' : 'Bei Zahlen kleiner als 1 rückt das Komma nach rechts – der Exponent wird negativ.',
+      sol: [`Das Komma rückt um ${Math.abs(e)} Stellen nach ${big ? 'links' : 'rechts'}.`, `${fmt(n)} = ${fmt(m)} · ${tenPow(e)}`]
+    };
+  },
+  sciVoll() {
+    const facts = [
+      ['Der Bodensee enthält etwa', 48000000000, 'm³ Wasser'],
+      ['Die Wasserfläche des Bodensees ist etwa', 536000000, 'm² groß'],
+      ['Ein Segeltuch ist etwa', 0.00035, 'm dick'],
+      ['Ein Sandkorn am Strand hat etwa', 0.0006, 'm Durchmesser'],
+      ['Auf einer großen Regatta werden etwa', 2400000, 'Liter Getränke verkauft'],
+      ['Eine Angelschnur ist etwa', 0.00025, 'm dick']
+    ];
+    let txt, n, unit;
+    if (Math.random() < .5) { [txt, n, unit] = pick(facts); }
+    else {
+      const m = pick([2.6, 3.45, 4.1, 5.8, 7.25, 9.4, 1.35]); const e = pick([4, 5, 6, 7, -3, -4, -5]);
+      n = Number((m * Math.pow(10, e)).toPrecision(6));
+      txt = 'Schreibe die Zahl'; unit = '';
+    }
+    const e = Math.floor(Math.log10(Math.abs(n)) + 1e-9), m = Number((n / Math.pow(10, e)).toPrecision(6));
+    return {
+      title: 'Wissenschaftliche Schreibweise', q: `${txt} <b>${fmt(n)}</b> ${unit}.<br>Schreibe ${unit ? 'die Zahl ' : ''}in wissenschaftlicher Schreibweise.`,
+      type: 'sci', m, e,
+      hint: 'Vor dem Komma steht genau eine Ziffer (1 bis 9). Dann zählst du, um wie viele Stellen das Komma gewandert ist.',
+      sol: [`Komma so verschieben, dass eine Ziffer davor steht: ${fmt(m)}`, `Es rückt ${Math.abs(e)} Stellen nach ${e >= 0 ? 'links' : 'rechts'} → Exponent ${fmt(e)}`, `${fmt(n)} = ${fmt(m)} · ${tenPow(e)}`]
+    };
+  },
+  sciZuruck() {
+    const m = pick([3.07, 4.5, 6.02, 8.1, 1.25, 2.9, 7.04]), e = pick([3, 4, 5, 6, -2, -3, -4]);
+    const n = Number((m * Math.pow(10, e)).toPrecision(8));
+    return {
+      title: 'Zurück zur Dezimalzahl', q: `Schreibe als Dezimalzahl.<div class="big">${fmt(m)} · ${tenPow(e)} = ?</div>`, type: 'num', ans: n,
+      hint: e > 0 ? `Mal ${tenPow(e)} heißt: Komma um ${e} Stellen nach rechts. Fehlende Stellen mit Nullen auffüllen.` : `Ein negativer Exponent heißt: Komma um ${-e} Stellen nach links.`,
+      sol: [`Komma um ${Math.abs(e)} Stellen nach ${e > 0 ? 'rechts' : 'links'} verschieben.`, `${fmt(m)} · ${tenPow(e)} = ${fmt(n)}`]
+    };
+  },
+  technisch() {
+    const e = pick([3, 6, 9, -3, -6]);
+    const lead = e > 0 ? pick([12, 45, 230, 7.5, 86, 310, 1.8]) : pick([25, 4.5, 120, 80, 3.2]);
+    const n = Number((lead * Math.pow(10, e)).toPrecision(8));
+    return {
+      title: 'Technische Schreibweise', q: `In der Technik sind nur Exponenten wie 3, 6, 9 oder −3, −6 erlaubt. Ergänze.<div class="big">${fmt(n)} = □ · ${tenPow(e)}</div>`,
+      type: 'num', ans: lead, pre: '□ =',
+      hint: `Schiebe das Komma um genau ${Math.abs(e)} Stellen nach ${e > 0 ? 'links' : 'rechts'}. Vor dem Komma dürfen hier auch mehrere Ziffern stehen.`,
+      sol: [`Komma um ${Math.abs(e)} Stellen nach ${e > 0 ? 'links' : 'rechts'}: ${fmt(lead)}`, `${fmt(n)} = ${fmt(lead)} · ${tenPow(e)}`]
+    };
+  },
+  einheiten() {
+    const c = pick([
+      { obj: 'Ein Segeltuch', v: pick([0.3, 0.35, 0.4]), u: 'mm', to: 'µm (Mikrometer)', f: 1000, rel: '1 mm = 1 000 µm' },
+      { obj: 'Eine dünne Angelschnur', v: pick([0.12, 0.15, 0.2]), u: 'mm', to: 'µm (Mikrometer)', f: 1000, rel: '1 mm = 1 000 µm' },
+      { obj: 'Eine Lackschicht auf dem Bootsrumpf', v: pick([0.08, 0.05, 0.06]), u: 'mm', to: 'nm (Nanometer)', f: 1e6, rel: '1 mm = 1 000 000 nm' },
+      { obj: 'Ein Wassertropfen', v: pick([2, 3, 4]), u: 'mm', to: 'nm (Nanometer)', f: 1e6, rel: '1 mm = 1 000 000 nm' }
+    ]);
+    const res = Number((c.v * c.f).toPrecision(8));
+    return {
+      title: 'Kleine Größen', q: `${c.obj} ist ${fmt(c.v)} ${c.u} dick. Gib die Dicke in ${c.to} an.<br><small class="muted">Es gilt: ${c.rel}</small>`,
+      type: 'num', ans: res, post: c.to.split(' ')[0],
+      hint: `Multipliziere ${fmt(c.v)} mit ${fmt(c.f)}. Bei Zehnerzahlen heißt das: Komma nach rechts verschieben.`,
+      sol: [`${fmt(c.v)} · ${fmt(c.f)} = ${fmt(res)}`, `Die Dicke beträgt ${fmt(res)} ${c.to.split(' ')[0]}.`]
+    };
+  },
+
+  /* ===== Regatta 3: Quadrat- und Kubikwurzeln ===== */
+  wurzelGanz() {
+    const n = R(4, 20);
+    return {
+      title: 'Quadratwurzel', q: `Bestimme ohne Taschenrechner.<div class="big">${sq(n * n)} = ?</div>`, type: 'num', ans: n,
+      hint: `Welche Zahl ergibt mit sich selbst multipliziert ${n * n}?`,
+      sol: [`${n} · ${n} = ${n * n}`, `also ${sq(n * n)} = ${n}`]
+    };
+  },
+  wurzelDez() {
+    const n = R(2, 15), k = pick([-1, -2, 1, 2]);
+    const r = n * Math.pow(10, k), rad = Number((r * r).toPrecision(10));
+    return {
+      title: 'Wurzel aus Dezimalzahlen', q: `Bestimme ohne Taschenrechner.<div class="big">${sq(fmt(rad))} = ?</div>`, type: 'num', ans: r,
+      hint: k < 0 ? `Denk an ${sq(n * n)} = ${n}. Das Ergebnis hat halb so viele Nachkommastellen wie die Zahl unter der Wurzel.` : `Denk an ${sq(n * n)} = ${n}. Zwei Nullen unter der Wurzel ergeben eine Null im Ergebnis.`,
+      sol: [`${fmt(r)} · ${fmt(r)} = ${fmt(rad)}`, `also ${sq(fmt(rad))} = ${fmt(r)}`]
+    };
+  },
+  einschachteln() {
+    let n; do { n = R(11, 390); } while (Number.isInteger(Math.sqrt(n)));
+    const f = Math.floor(Math.sqrt(n));
+    const opts = shuffle([...new Set([[f, f + 1], [f - 1, f], [f + 1, f + 2], [Math.floor(n / 2) - 1, Math.floor(n / 2)]].map(([a, b]) => `${a} < ${sq(n)} < ${b}`))]);
+    return {
+      title: 'Einschachteln', q: `Zwischen welchen benachbarten ganzen Zahlen liegt ${sq(n)}?`, type: 'mc', options: opts, ans: `${f} < ${sq(n)} < ${f + 1}`,
+      hint: `Suche die Quadratzahlen direkt unter und über ${n}.`,
+      sol: [`${f}<sup>2</sup> = ${f * f} &lt; ${n} &lt; ${(f + 1) * (f + 1)} = ${f + 1}<sup>2</sup>`, `also ${f} &lt; ${sq(n)} &lt; ${f + 1}`]
+    };
+  },
+  quadratFlaeche() {
+    const a = pick([R(3, 15), R(3, 15), pick([1.5, 2.5, 3.5, 4.5, 0.8, 1.2])]);
+    const A = Number((a * a).toPrecision(10));
+    const ctx = pick(['Ein quadratisches Sonnensegel über dem Steg', 'Eine quadratische Badeplattform im See', 'Ein quadratisches Startfeld aus Bojen', 'Ein quadratischer Bootsanhänger-Stellplatz']);
+    return {
+      title: 'Vom Quadrat zur Seite', q: `${ctx} hat den Flächeninhalt <b>${fmt(A)} m²</b>. Wie lang ist eine Seite?`,
+      sketch: skQuadrat(`A = ${fmt(A)} m²`), type: 'num', ans: a, post: 'm',
+      hint: 'Beim Quadrat gilt A = a · a. Du suchst also die Zahl, die mit sich selbst multipliziert den Flächeninhalt ergibt.',
+      sol: [`a = ${sq(fmt(A))}`, `${fmt(a)} · ${fmt(a)} = ${fmt(A)}`, `a = ${fmt(a)} m`]
+    };
+  },
+  wuerfelVolumen() {
+    const a = pick([R(2, 10), R(2, 10), pick([1.5, 0.5, 0.2, 20])]);
+    const V = Number((a * a * a).toPrecision(10)), u = a >= 20 ? 'cm' : pick(['cm', 'dm']);
+    const ctx = pick(['Ein würfelförmiger Ankerstein', 'Eine würfelförmige Proviantkiste', 'Ein würfelförmiger Schwimmkörper einer Boje']);
+    return {
+      title: 'Vom Würfel zur Kante', q: `${ctx} hat das Volumen <b>${fmt(V)} ${u}³</b>. Wie lang ist eine Kante?`,
+      sketch: skWuerfel(`V = ${fmt(V)} ${u}³`), type: 'num', ans: a, post: u,
+      hint: 'Beim Würfel gilt V = a · a · a. Gesucht ist die Kubikwurzel.',
+      sol: [`a = ${cb(fmt(V))}`, `${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `a = ${fmt(a)} ${u}`]
+    };
+  },
+  kubikwurzel() {
+    const a = pick([R(2, 10), 0.1, 0.2, 0.5, 20, 30]);
+    const V = Number((a ** 3).toPrecision(10));
+    return {
+      title: 'Kubikwurzel', q: `Bestimme ohne Taschenrechner.<div class="big">${cb(fmt(V))} = ?</div>`, type: 'num', ans: a,
+      hint: `Welche Zahl ergibt dreimal mit sich selbst multipliziert ${fmt(V)}?`,
+      sol: [`${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `also ${cb(fmt(V))} = ${fmt(a)}`]
+    };
+  },
+  figurQuadrate() {
+    const cells = pick(FIGUREN), k = cells.length, a = R(2, 9), A = k * a * a;
+    return {
+      title: 'Gebilde aus Quadraten', q: `Ein Steg-Belag besteht aus <b>${k} gleich großen</b> quadratischen Platten. Zusammen sind sie <b>${A} dm²</b> groß. Wie lang ist die Seite einer Platte?`,
+      sketch: skFigur(cells, `gesamt ${A} dm²`), type: 'num', ans: a, post: 'dm',
+      hint: 'Rechne zuerst aus, wie groß eine einzelne Platte ist. Dann ziehst du die Wurzel.',
+      sol: [`Eine Platte: ${A} : ${k} = ${a * a} dm²`, `a = ${sq(a * a)} = ${a} dm`]
+    };
+  },
+
+  /* ===== Regatta 4: Wurzelgesetze & Gebilde ===== */
+  wurzelProdukt() {
+    const k = pick([2, 3, 5, 6, 7]), p = R(1, 3), q = R(2, 4), a = k * p * p, b = k * q * q;
+    return {
+      title: 'Wurzeln multiplizieren', q: `Berechne ohne Taschenrechner.<div class="big">${sq(a)} · ${sq(b)} = ?</div>`, type: 'num', ans: k * p * q,
+      hint: 'Fasse zu einer Wurzel zusammen: √a · √b = √(a · b). Das Produkt ist eine Quadratzahl.',
+      sol: [`${sq(a)} · ${sq(b)} = ${sq(`${a} · ${b}`)} = ${sq(a * b)}`, `= ${k * p * q}`]
+    };
+  },
+  wurzelQuotient() {
+    const k = pick([2, 3, 5, 6, 7, 10]), n = R(2, 9), a = k * n * n;
+    return {
+      title: 'Wurzeln dividieren', q: `Berechne ohne Taschenrechner.<div class="big">${sq(a)} : ${sq(k)} = ?</div>`, type: 'num', ans: n,
+      hint: 'Fasse zu einer Wurzel zusammen: √a : √b = √(a : b).',
+      sol: [`${sq(a)} : ${sq(k)} = ${sq(`${a} : ${k}`)} = ${sq(n * n)}`, `= ${n}`]
+    };
+  },
+  zusammenfassen() {
+    const k = pick(SQFREE), c = [R(2, 9), R(1, 9), R(1, 6)], s = [1, pick([1, -1]), pick([1, -1])];
+    let res = c[0] + s[1] * c[1] + s[2] * c[2];
+    if (res <= 0) return G.zusammenfassen();
+    const term = `${c[0]}${sq(k)} ${s[1] > 0 ? '+' : '−'} ${c[1]}${sq(k)} ${s[2] > 0 ? '+' : '−'} ${c[2]}${sq(k)}`;
+    return {
+      title: 'Wurzelterme zusammenfassen', q: `Fasse zusammen.<div class="big">${term}</div>`, type: 'surd', c: res, r: k,
+      hint: `Alle Summanden haben dieselbe Wurzel ${sq(k)}. Rechne nur mit den Zahlen davor – wie bei 3x + 2x.`,
+      sol: [`${c[0]} ${s[1] > 0 ? '+' : '−'} ${c[1]} ${s[2] > 0 ? '+' : '−'} ${c[2]} = ${res}`, `Ergebnis: ${surd(res, k)}`]
+    };
+  },
+  teilweise() {
+    let m, k; do { m = R(2, 6); k = pick(SQFREE); } while (m * m * k > 300);
+    return {
+      title: 'Teilweise Wurzel ziehen', q: `Ziehe die Wurzel teilweise.<div class="big">${sq(m * m * k)} = ?</div>`, type: 'surd', c: m, r: k,
+      hint: `Zerlege ${m * m * k} in eine möglichst große Quadratzahl mal eine Restzahl. Quadratzahlen: 4, 9, 16, 25, 36 …`,
+      sol: [`${sq(m * m * k)} = ${sq(`${m * m} · ${k}`)}`, `= ${sq(m * m)} · ${sq(k)}`, `= ${surd(m, k)}`]
+    };
+  },
+  karoQuadrat() {
+    let p, q; do { p = R(1, 4); q = R(1, 4); } while (p + q < 3);
+    const A = p * p + q * q, n = p + q;
+    return {
+      title: 'Schräges Quadrat im Karonetz', q: `Ein Bojenfeld ist als schräges Quadrat im Karonetz gezeichnet (1 Kästchen = 1 km²). Wie lang ist eine Seite?<br><small class="muted">Trage die Zahl unter der Wurzel ein.</small>`,
+      sketch: skKaro(p, q), type: 'num', ans: A, pre: 'Seite = √', post: 'km',
+      hint: `Bestimme zuerst den Flächeninhalt: großes Quadrat (${n} · ${n} Kästchen) minus die vier Dreiecke in den Ecken.`,
+      sol: [`Großes Quadrat: ${n} · ${n} = ${n * n} Kästchen`, `Vier Dreiecke: 4 · (${p} · ${q} : 2) = ${2 * p * q} Kästchen`, `Schräges Quadrat: ${n * n} − ${2 * p * q} = ${A} Kästchen`, `Seite = ${sq(A)} km` + (Number.isInteger(Math.sqrt(A)) ? ` = ${Math.sqrt(A)} km` : '')]
+    };
+  },
+  wuerfelOberflaeche() {
+    const a = pick([R(2, 12), 1.5, 2.5]), O = Number((6 * a * a).toPrecision(10));
+    return {
+      title: 'Würfel aus der Oberfläche', q: `Eine würfelförmige Kiste für Segelzubehör soll ringsum lackiert werden. Ihre Oberfläche beträgt <b>${fmt(O)} dm²</b>. Wie lang ist eine Kante?`,
+      sketch: skWuerfel(`O = ${fmt(O)} dm²`), type: 'num', ans: a, post: 'dm',
+      hint: 'Ein Würfel hat 6 gleich große quadratische Flächen. Wie groß ist eine davon?',
+      sol: [`Eine Fläche: ${fmt(O)} : 6 = ${fmt(a * a)} dm²`, `a = ${sq(fmt(a * a))} = ${fmt(a)} dm`]
+    };
+  },
+
+  /* ===== Regatta 5: Verknüpfungen ===== */
+  teilweiseZusammen() {
+    const k = pick([2, 3, 5, 6, 7]);
+    let m1, m2; do { m1 = R(2, 5); m2 = R(2, 5); } while (m1 === m2 || m1 * m1 * k > 150 || m2 * m2 * k > 150);
+    const c1 = R(1, 3), c2 = R(1, 3), sub = Math.random() < .35;
+    const res = c1 * m1 + (sub ? -1 : 1) * c2 * m2;
+    if (res <= 0) return G.teilweiseZusammen();
+    const cf = c => c === 1 ? '' : c + ' · ';
+    return {
+      title: 'Erst zerlegen, dann zusammenfassen', q: `Vereinfache so weit wie möglich.<div class="big">${cf(c1)}${sq(m1 * m1 * k)} ${sub ? '−' : '+'} ${cf(c2)}${sq(m2 * m2 * k)}</div>`,
+      type: 'surd', c: res, r: k,
+      hint: `So wie es da steht, kannst du nicht zusammenfassen. Ziehe erst bei beiden Wurzeln teilweise die Wurzel – dann steht überall ${sq(k)}.`,
+      sol: [`${sq(m1 * m1 * k)} = ${surd(m1, k)} &nbsp; und &nbsp; ${sq(m2 * m2 * k)} = ${surd(m2, k)}`, `${cf(c1)}${surd(m1, k)} ${sub ? '−' : '+'} ${cf(c2)}${surd(m2, k)} = ${surd(c1 * m1, k)} ${sub ? '−' : '+'} ${surd(c2 * m2, k)}`, `= ${surd(res, k)}`]
+    };
+  },
+  dreiTerme() {
+    const k = pick([2, 3, 5]);
+    const m = [R(2, 4), R(2, 5), 1];
+    const c3 = R(1, 6);
+    const res = m[0] + m[1] - c3;
+    if (res <= 0 || m[0] === m[1]) return G.dreiTerme();
+    return {
+      title: 'Wurzel-Kombi', q: `Vereinfache so weit wie möglich.<div class="big">${sq(m[0] * m[0] * k)} + ${sq(m[1] * m[1] * k)} − ${c3 === 1 ? '' : c3}${sq(k)}</div>`,
+      type: 'surd', c: res, r: k,
+      hint: `Ziehe bei den ersten beiden Wurzeln teilweise die Wurzel. Danach haben alle drei Summanden ${sq(k)}.`,
+      sol: [`${sq(m[0] * m[0] * k)} = ${surd(m[0], k)}, &nbsp; ${sq(m[1] * m[1] * k)} = ${surd(m[1], k)}`, `${surd(m[0], k)} + ${surd(m[1], k)} − ${surd(c3, k)} = ${surd(res, k)}`]
+    };
+  },
+  zweiQuadrate() {
+    const k = pick([2, 3, 5]);
+    let m1, m2; do { m1 = R(2, 4); m2 = R(2, 5); } while (m1 === m2);
+    const A1 = m1 * m1 * k, A2 = m2 * m2 * k;
+    return {
+      title: 'Zwei Pontons', q: `Zwei quadratische Schwimmpontons liegen direkt nebeneinander. Sie haben die Flächen <b>${A1} m²</b> und <b>${A2} m²</b>. Wie lang sind beide zusammen? Gib das Ergebnis als vereinfachten Wurzelterm an.`,
+      sketch: skZweiQuadrate(`${A1} m²`, `${A2} m²`, m1, m2), type: 'surd', c: m1 + m2, r: k, post: 'm',
+      hint: `Die Seitenlängen sind ${sq(A1)} und ${sq(A2)}. Ziehe teilweise die Wurzel und fasse dann zusammen.`,
+      sol: [`Seiten: ${sq(A1)} = ${surd(m1, k)} &nbsp; und &nbsp; ${sq(A2)} = ${surd(m2, k)}`, `Länge: ${surd(m1, k)} + ${surd(m2, k)} = ${surd(m1 + m2, k)} m`]
+    };
+  },
+  quadratUmfang() {
+    const k = pick([2, 3, 5, 6]), m = R(2, 5), A = m * m * k;
+    return {
+      title: 'Zaun ums Quadrat', q: `Ein quadratischer Liegeplatz an Land hat <b>${A} m²</b>. Er soll ringsum mit einem Seil abgesperrt werden. Wie lang ist das Seil? Gib einen vereinfachten Wurzelterm an.`,
+      sketch: skQuadrat(`A = ${A} m²`, 'Umfang = ?'), type: 'surd', c: 4 * m, r: k, post: 'm',
+      hint: 'Erst die Seitenlänge als Wurzel bestimmen und teilweise die Wurzel ziehen. Der Umfang besteht aus 4 Seiten.',
+      sol: [`a = ${sq(A)} = ${sq(`${m * m} · ${k}`)} = ${surd(m, k)} m`, `u = 4 · ${surd(m, k)} = ${surd(4 * m, k)} m`]
+    };
+  },
+  wuerfelKette() {
+    const a = R(2, 9), V = a ** 3;
+    return {
+      title: 'Würfel: von V nach O', q: `Ein würfelförmiger Schwimmkörper hat das Volumen <b>${V} dm³</b>. Er bekommt einen neuen Anstrich. Wie groß ist seine Oberfläche?`,
+      sketch: skWuerfel(`V = ${V} dm³`, 'O = ?'), type: 'num', ans: 6 * a * a, post: 'dm²',
+      hint: 'Zwei Schritte: Kubikwurzel ergibt die Kante. Dann: 6 Quadrate mit dieser Seitenlänge.',
+      sol: [`a = ${cb(V)} = ${a} dm`, `Eine Fläche: ${a} · ${a} = ${a * a} dm²`, `O = 6 · ${a * a} = ${6 * a * a} dm²`]
+    };
+  },
+  klammerWurzel() {
+    const k = pick([2, 3, 5]);
+    let p, q; do { p = R(1, 4); q = R(2, 5); } while (p === q);
+    return {
+      title: 'Wurzel mal Klammer', q: `Berechne ohne Taschenrechner.<div class="big">${sq(k)} · (${sq(k * p * p)} + ${sq(k * q * q)})</div>`, type: 'num', ans: k * (p + q),
+      hint: `Multipliziere ${sq(k)} mit jedem Summanden in der Klammer und fasse jeweils zu einer Wurzel zusammen.`,
+      sol: [`= ${sq(`${k} · ${k * p * p}`)} + ${sq(`${k} · ${k * q * q}`)}`, `= ${sq(k * k * p * p)} + ${sq(k * k * q * q)}`, `= ${k * p} + ${k * q} = ${k * (p + q)}`]
+    };
+  },
+  rechteckWurzel() {
+    const k = pick([2, 3, 5, 6]);
+    let p, q; do { p = R(1, 4); q = R(2, 5); } while (p === q);
+    const a = k * p * p, b = k * q * q;
+    return {
+      title: 'Rechteckiges Segel-Lager', q: `Ein rechteckiger Lagerraum für Segel ist <b>${sq(a)} m</b> lang und <b>${sq(b)} m</b> breit. Wie groß ist seine Fläche?`,
+      sketch: skRechteck(`√${a} m`, `√${b} m`),
+      type: 'num', ans: k * p * q, post: 'm²',
+      hint: 'A = Länge · Breite. Fasse die beiden Wurzeln zu einer zusammen – unter der Wurzel steht dann eine Quadratzahl.',
+      sol: [`A = ${sq(a)} · ${sq(b)} = ${sq(a * b)}`, `= ${k * p * q} m²`]
+    };
+  },
+  sciProdukt() {
+    const a = R(2, 4), b = R(2, 3), e1 = R(2, 6), e2 = R(2, 5);
+    const m = a * b, e = e1 + e2;
+    return {
+      title: 'Zehnerpotenzen multiplizieren', q: `Auf dem Bodensee fahren an einem Sommertag rund ${a} · ${tenPow(e1)} Boote, jedes im Schnitt ${b} · ${tenPow(e2)} m weit. Wie viele Meter sind das zusammen? Gib das Ergebnis in wissenschaftlicher Schreibweise an.<br><small class="muted">(Fantasiezahlen – nur zum Rechnen.)</small>`,
+      type: 'sci', m: m >= 10 ? m / 10 : m, e: m >= 10 ? e + 1 : e,
+      hint: `Multipliziere die Zahlen vorne (${a} · ${b}) und die Zehnerpotenzen getrennt. Bei gleicher Basis werden die Exponenten addiert.`,
+      sol: [`${a} · ${b} = ${m}`, `${tenPow(e1)} · ${tenPow(e2)} = ${tenPow(e)}`, m >= 10 ? `${m} · ${tenPow(e)} = ${fmt(m / 10)} · ${tenPow(e + 1)}` : `Ergebnis: ${m} · ${tenPow(e)}`]
+    };
+  }
+};
+
+/* ---------- Regatten ---------- */
+const RACES = [
+  { name: 'Clubregatta Gaienhofen', sub: 'Potenzen berechnen, Exponenten finden, Minus-Fallen', n: 5, soll: 8 * 60,
+    gens: ['potenzwert', 'produktPotenz', 'exponent', 'minusFalle', 'groesstePotenz', 'potenzwert'] },
+  { name: 'Untersee-Cup', sub: 'Zehnerpotenzen: wissenschaftlich, technisch, Einheiten', n: 6, soll: 11 * 60,
+    gens: ['sciExp', 'sciVoll', 'sciZuruck', 'technisch', 'einheiten', 'sciExp', 'sciVoll'] },
+  { name: 'Bodensee-Woche', sub: 'Quadrat- und Kubikwurzeln, Quadrate und Würfel', n: 7, soll: 14 * 60,
+    gens: ['wurzelGanz', 'wurzelDez', 'einschachteln', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate'] },
+  { name: 'Rund um die Reichenau', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 18 * 60,
+    gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'figurQuadrate'] },
+  { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 22 * 60,
+    gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'teilweiseZusammen'] }
+];
+const SAILS = [['Rot', '#e4572e'], ['Blau', '#2563eb'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57']];
+const MEDALS = { gold: '🥇', silber: '🥈', bronze: '🥉', ziel: '🏁' };
+const RANK = ['gold', 'silber', 'bronze', 'ziel'];
+const MAX_KRINGEL = 5;
+
+/* ---------- Speicher (nur dieses Gerät) ---------- */
+const KEY = 'potenzRegatta.v1';
+let save = { sail: 0, name: '', best: {} };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) save = Object.assign(save, s); } catch (e) {}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
+const ALLE = new URLSearchParams(location.search).has('alle');   // Lehrkraft: ?alle schaltet alles frei
+const unlocked = i => ALLE || i === 0 || !!save.best[i - 1];
+
+/* ---------- Ansichten ---------- */
+function show(id) {
+  ['vStart', 'vRaces', 'vRace', 'vResult'].forEach(v => $(v).classList.toggle('hidden', v !== id));
+  window.scrollTo(0, 0);
+}
+function boatSVG(color, w = 60) {
+  return `<svg viewBox="-34 -70 68 84" width="${w}"><path d="M-30 0 L30 0 L22 11 L-24 11 Z" fill="#fff" stroke="#334155" stroke-width="2"/>
+  <line x1="0" y1="0" x2="0" y2="-64" stroke="#334155" stroke-width="2.5"/>
+  <path d="M3 -62 L3 -5 L30 -5 Z" fill="${color}"/><path d="M-3 -58 L-3 -7 L-26 -7 Z" fill="${color}" opacity=".6"/></svg>`;
+}
+function renderStart() {
+  $('boatPicker').innerHTML = SAILS.map(([n, c], i) =>
+    `<button class="boatpick ${i === save.sail ? 'sel' : ''}" data-i="${i}">${boatSVG(c, 46)}<small>${n}</small></button>`).join('');
+  $('boatName').value = save.name || '';
+}
+$('boatPicker').addEventListener('click', e => {
+  const b = e.target.closest('.boatpick'); if (!b) return;
+  save.sail = +b.dataset.i; persist(); renderStart();
+});
+$('boatName').addEventListener('input', e => { save.name = e.target.value.trim(); persist(); });
+$('toRaces').onclick = () => { renderRaces(); show('vRaces'); };
+$('backStart').onclick = () => { renderStart(); show('vStart'); };
+
+function renderRaces() {
+  $('raceList').innerHTML = RACES.map((r, i) => {
+    const open = unlocked(i), m = save.best[i];
+    return `<button class="card race ${open ? '' : 'locked'}" data-i="${i}" ${open ? '' : 'disabled'}>
+      <span class="num">${i + 1}</span>
+      <span><b>${r.name}</b><small class="muted">${r.sub}</small><small class="muted">${r.n} Bojen · Sollzeit ${Math.floor(r.soll / 60)}:00 min</small></span>
+      <span class="medal">${m ? MEDALS[m] : (open ? '' : '🔒')}</span></button>`;
+  }).join('');
+}
+$('raceList').addEventListener('click', e => {
+  const b = e.target.closest('.race'); if (!b || b.disabled) return;
+  startRace(+b.dataset.i);
+});
+
+/* ---------- Szene ---------- */
+const BOAT_Y = 158, START_X = 55, FINISH_X = 950;
+const buoyX = (i, n) => 190 + i * (690 / Math.max(1, n - 1));
+function drawScene(n) {
+  const color = SAILS[save.sail][1];
+  let waves = '';
+  for (let i = 0; i < 9; i++) {
+    const y = 118 + (i % 3) * 30, x = (i * 117) % 1000;
+    waves += `<path class="wave" style="animation-delay:${-i * .4}s" d="M${x} ${y} q12 -6 24 0 t24 0" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/>`;
+  }
+  let buoys = '';
+  for (let i = 0; i < n; i++) {
+    const x = buoyX(i, n);
+    buoys += `<g class="buoy" id="buoy${i}" transform="translate(${x},${BOAT_Y + 4})">
+      <ellipse cx="0" cy="6" rx="12" ry="4" fill="rgba(0,0,0,.18)"/>
+      <path class="buoytop" d="M-9 4 L-6 -18 L6 -18 L9 4 Z" fill="#f97316" stroke="#9a3412" stroke-width="1.5"/>
+      <text x="0" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${i + 1}</text></g>`;
+  }
+  $('scene').innerHTML = `
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#eef8ff"/></linearGradient>
+      <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cb0e0"/><stop offset="1" stop-color="#1f6fa8"/></linearGradient>
+      <pattern id="checker" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern>
+    </defs>
+    <rect width="1000" height="104" fill="url(#sky)"/>
+    <circle cx="880" cy="32" r="18" fill="#ffd166"/>
+    <path d="M0 78 Q90 48 200 70 T430 58 T660 72 T860 54 T1000 66 V104 H0Z" fill="#9cc58a"/>
+    <path d="M0 92 Q180 76 360 90 T720 86 T1000 84 V104 H0Z" fill="#6fa862"/>
+    <g fill="#f8fafc" stroke="#64748b" stroke-width="1"><rect x="292" y="70" width="12" height="18"/><path d="M290 70 L298 56 L306 70Z" fill="#b45309"/></g>
+    <rect y="102" width="1000" height="108" fill="url(#lake)"/>
+    ${waves}
+    <g transform="translate(${START_X - 20},${BOAT_Y})"><line x1="0" y1="10" x2="0" y2="-40" stroke="#334155" stroke-width="2.5"/><path d="M0 -40 L18 -33 L0 -26Z" fill="#facc15"/><text x="0" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">START</text></g>
+    <g transform="translate(${FINISH_X + 15},${BOAT_Y})"><line x1="0" y1="10" x2="0" y2="-44" stroke="#334155" stroke-width="2.5"/><rect x="0" y="-44" width="24" height="16" fill="url(#checker)" stroke="#111"/><text x="0" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">ZIEL</text></g>
+    ${buoys}
+    <g id="boat" style="transform:translate(${START_X}px,${BOAT_Y}px)">
+      <g id="boatSpin" style="transform-box:fill-box;transform-origin:center">
+        <g class="bob" style="transform-box:fill-box;transform-origin:center bottom">
+          <path d="M-30 0 L30 0 L22 11 L-24 11 Z" fill="#fff" stroke="#334155" stroke-width="2"/>
+          <line x1="0" y1="0" x2="0" y2="-64" stroke="#334155" stroke-width="2.5"/>
+          <path d="M3 -62 L3 -5 L30 -5 Z" fill="${color}"/>
+          <path d="M-3 -58 L-3 -7 L-26 -7 Z" fill="${color}" opacity=".6"/>
+        </g>
+      </g>
+      ${save.name ? `<text x="0" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${esc(save.name)}</text>` : ''}
+    </g>`;
+}
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function moveBoat(x, y = BOAT_Y, fast = false) {
+  const b = $('boat'); b.classList.toggle('fast', fast);
+  b.style.transform = `translate(${x}px,${y}px)`;
+}
+function kringelAnim() {
+  const s = $('boatSpin'); s.classList.remove('spin'); void s.getBBox(); s.classList.add('spin');
+}
+
+/* ---------- Rennen ---------- */
+let st = null, timer = null;
+const elapsed = () => Math.floor((Date.now() - st.t0) / 1000) + st.penalty;
+const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+function updateBar() {
+  const r = RACES[st.lvl];
+  $('cRace').textContent = `${st.lvl + 1}. ${r.name}`;
+  $('cBuoy').textContent = `Boje ${Math.min(st.i + 1, r.n)}/${r.n}`;
+  $('cKringel').textContent = `Strafkringel: ${'⭕'.repeat(st.kringel)}${'○'.repeat(Math.max(0, MAX_KRINGEL - st.kringel))}`;
+  const t = elapsed();
+  $('cTime').textContent = `⏱ ${mmss(t)} / ${mmss(r.soll)}`;
+  $('cTime').style.color = t > r.soll ? 'var(--bad)' : '';
+}
+function startRace(lvl) {
+  const r = RACES[lvl];
+  st = { lvl, i: 0, kringel: 0, tipps: 0, penalty: 0, t0: Date.now(), order: shuffle(r.gens.slice()), task: null, busy: true };
+  drawScene(r.n);
+  show('vRace');
+  $('taskCard').innerHTML = `<div class="waiting">Startschuss! Dein Boot segelt zur ersten Boje …</div>`;
+  clearInterval(timer); timer = setInterval(updateBar, 500); updateBar();
+  setTimeout(() => moveBoat(buoyX(0, r.n) - 48), 300);
+  setTimeout(nextTask, 1900);
+}
+function genFor(i) { return G[st.order[i % st.order.length]](); }
+function nextTask() {
+  st.task = genFor(st.i); st.busy = false; st.hintShown = false;
+  renderTask();
+}
+function renderTask() {
+  const t = st.task;
+  let input = '';
+  if (t.type === 'num') input = `<div class="answer">${t.pre ? `<span>${t.pre}</span>` : ''}<input id="a1" inputmode="decimal" autocomplete="off" aria-label="Antwort">${t.post ? `<span>${t.post}</span>` : ''}</div>`;
+  if (t.type === 'sci') input = `<div class="answer"><input id="a1" class="s" inputmode="decimal" autocomplete="off" aria-label="Zahl vor der Zehnerpotenz"><span>· 10</span><sup><input id="a2" class="s" inputmode="text" autocomplete="off" aria-label="Exponent" style="font-size:1rem;width:3.2em"></sup></div>`;
+  if (t.type === 'surd') input = `<div class="answer"><input id="a1" class="s" inputmode="numeric" autocomplete="off" aria-label="Zahl vor der Wurzel"><span>· √</span><input id="a2" class="s" inputmode="numeric" autocomplete="off" aria-label="Zahl unter der Wurzel">${t.post ? `<span>${t.post}</span>` : ''}</div><small class="muted">Links die Zahl vor der Wurzel, rechts die Zahl unter der Wurzel.</small>`;
+  if (t.type === 'mc') input = `<div class="mc">${t.options.map((o, k) => `<button class="opt" data-k="${k}">${o}</button>`).join('')}</div>`;
+  $('taskCard').innerHTML = `
+    <div class="task ${t.sketch ? '' : 'nosketch'}">
+      ${t.sketch ? `<div class="sketch">${t.sketch}</div>` : ''}
+      <div>
+        <div class="qtitle">Boje ${st.i + 1} · ${t.title}</div>
+        <div class="q">${t.q}</div>
+        ${input}
+        <div class="btns">${t.type !== 'mc' ? '<button class="primary" id="check">Prüfen ✓</button>' : ''}<button id="hint">💡 Tipp (+10 s)</button></div>
+        <div id="fb"></div>
+      </div>
+    </div>`;
+  if (t.type === 'mc') $('taskCard').querySelectorAll('.opt').forEach(b => b.onclick = () => submit(t.options[+b.dataset.k]));
+  else {
+    $('check').onclick = () => submit();
+    $('taskCard').querySelectorAll('input').forEach(inp => inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }));
+    setTimeout(() => $('a1') && $('a1').focus({ preventScroll: true }), 50);
+  }
+  $('hint').onclick = () => {
+    if (st.hintShown || st.busy) return;
+    st.hintShown = true; st.tipps++; st.penalty += 10; updateBar();
+    $('fb').innerHTML = `<div class="fb hint">💡 ${t.hint}</div>`;
+  };
+}
+function check(t, mcVal) {
+  if (t.type === 'mc') return { ok: mcVal === t.ans };
+  const v1 = parseNum($('a1').value);
+  if (t.type === 'num') {
+    if (isNaN(v1)) return { empty: true };
+    return { ok: eq(v1, t.ans) };
+  }
+  const v2 = parseNum($('a2').value);
+  if (t.type === 'sci') {
+    if (isNaN(v1) || isNaN(v2)) return { empty: true };
+    const val = v1 * Math.pow(10, v2), target = t.m * Math.pow(10, t.e);
+    if (eq(val, target) && !(Math.abs(v1) >= 1 && Math.abs(v1) < 10)) return { almost: 'Der Wert stimmt – aber vor dem Komma muss genau eine Ziffer von 1 bis 9 stehen. Verbessere noch!' };
+    return { ok: eq(val, target) && Number.isInteger(v2) };
+  }
+  if (t.type === 'surd') {
+    const c = $('a1').value.trim() === '' ? 1 : v1;
+    if (isNaN(c) || isNaN(v2)) return { empty: true };
+    const valueOk = eq(c * c * v2, t.c * t.c * t.r) && c > 0;
+    if (valueOk && (c !== t.c || v2 !== t.r)) return { almost: 'Der Wert stimmt – aber du kannst noch weiter vereinfachen. Steckt unter der Wurzel noch eine Quadratzahl?' };
+    return { ok: valueOk };
+  }
+}
+function submit(mcVal) {
+  if (st.busy) return;
+  const t = st.task, res = check(t, mcVal);
+  if (res.empty) { $('fb').innerHTML = `<div class="fb warn">Bitte trage zuerst eine Antwort ein.</div>`; return; }
+  if (res.almost) { $('fb').innerHTML = `<div class="fb warn">🔎 ${res.almost}</div>`; return; }
+  st.busy = true;
+  $('taskCard').querySelectorAll('input,button').forEach(el => el.disabled = true);
+  const r = RACES[st.lvl];
+  if (res.ok) {
+    $('fb').innerHTML = `<div class="fb ok">✅ <b>Richtig!</b> ${pick(['Saubere Wende um die Boje!', 'Volle Fahrt voraus!', 'Perfekte Rundung!', 'Der Wind ist auf deiner Seite!'])}</div>`;
+    const x = buoyX(st.i, r.n);
+    moveBoat(x + 6, BOAT_Y + 22, true);
+    setTimeout(() => {
+      $('buoy' + st.i).classList.add('done');
+      st.i++; updateBar();
+      if (st.i >= r.n) { moveBoat(FINISH_X); setTimeout(finish, 1600); }
+      else { moveBoat(buoyX(st.i, r.n) - 48); $('taskCard').innerHTML = `<div class="waiting">Weiter zur Boje ${st.i + 1} …</div>`; setTimeout(nextTask, 1600); }
+    }, 1300);
+  } else {
+    st.kringel++; st.penalty += 20; updateBar(); kringelAnim();
+    const sol = `<ol class="sol">${t.sol.map(s => `<li>${s}</li>`).join('')}</ol>`;
+    if (st.kringel > MAX_KRINGEL) {
+      $('fb').innerHTML = `<div class="fb bad">❌ Leider falsch. So geht's:${sol}</div><div class="btns"><button class="primary" id="dnf">Weiter</button></div>`;
+      $('dnf').onclick = () => finish(true);
+      return;
+    }
+    $('fb').innerHTML = `<div class="fb bad">❌ <b>Strafkringel!</b> (+20 s) So wäre es richtig gewesen:${sol}</div>
+      <div class="btns"><button class="primary" id="again">Neue Aufgabe an dieser Boje ➜</button></div>`;
+    $('again').onclick = nextTask; $('again').focus();
+  }
+}
+function finish(dnf = false) {
+  clearInterval(timer);
+  const r = RACES[st.lvl], total = elapsed();
+  let medal = null, line;
+  if (dnf) line = `<div class="medalbig">⚓</div><h2>Disqualifiziert</h2><p>Mehr als ${MAX_KRINGEL} Strafkringel. Schau dir die Lösungswege noch einmal an – beim nächsten Start klappt es!</p>`;
+  else {
+    let idx = st.kringel <= 1 ? 0 : st.kringel <= 3 ? 1 : 2;
+    const late = total > r.soll; if (late) idx = Math.min(3, idx + 1);
+    medal = RANK[idx];
+    const prev = save.best[st.lvl];
+    if (!prev || RANK.indexOf(medal) < RANK.indexOf(prev)) { save.best[st.lvl] = medal; persist(); }
+    const txt = { gold: 'Regattasieg!', silber: 'Zweiter Platz!', bronze: 'Dritter Platz!', ziel: 'Im Ziel!' }[medal];
+    line = `<div class="medalbig">${MEDALS[medal]}</div><h2>${txt}</h2>
+      <p>${esc(save.name || 'Dein Boot')} hat die ${r.name} beendet${late ? ' – aber die Sollzeit überschritten, deshalb eine Stufe tiefer' : ''}.</p>`;
+  }
+  const hasNext = !dnf && st.lvl + 1 < RACES.length;
+  $('resultCard').innerHTML = `${line}
+    <div class="stats"><span class="chip">⏱ ${mmss(total)} (Soll ${mmss(r.soll)})</span><span class="chip">Strafkringel: ${st.kringel}</span><span class="chip">Tipps: ${st.tipps}</span></div>
+    <div class="btns" style="justify-content:center">
+      <button id="rAgain">Nochmal segeln</button>
+      ${hasNext ? '<button class="primary" id="rNext">Nächste Regatta ➜</button>' : ''}
+      <button id="rList">Regattakalender</button></div>
+    ${!dnf && st.lvl + 1 === RACES.length ? '<p style="margin-top:14px">🏆 Du hast die Bodensee-Meisterschaft gesegelt – Respekt, Skipper!</p>' : ''}`;
+  $('rAgain').onclick = () => startRace(st.lvl);
+  if (hasNext) $('rNext').onclick = () => startRace(st.lvl + 1);
+  $('rList').onclick = () => { renderRaces(); show('vRaces'); };
+  show('vResult');
+}
+$('giveUp').onclick = () => {
+  if (!confirm('Regatta wirklich abbrechen?')) return;
+  clearInterval(timer); renderRaces(); show('vRaces');
+};
+
+renderStart();
+</script>
+</body>
+</html>
