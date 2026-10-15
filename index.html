@@ -126,7 +126,8 @@ sup{font-size:.7em}
       </div>
       <label for="boatName">Name deines Bootes (freiwillig)</label>
       <input type="text" id="boatName" maxlength="10" placeholder="z. B. Wurzelwind">
-      <small class="muted" style="display:block;margin:-.7rem 0 1rem">Höchstens 10 Buchstaben – der Name steht auf dem Rumpf.</small>
+      <small class="muted" style="display:block;margin:-.7rem 0 .4rem">Höchstens 10 Buchstaben – der Name steht auf dem Rumpf.</small>
+      <div class="fb bad hidden" id="nameHinweis" style="margin:0 0 1rem;max-width:340px">Dieser Name ist nicht erlaubt. Bitte wähle einen anderen.</div>
       <button class="primary" id="toRaces">Zu den Regatten ➜</button>
     </div>
     <div class="card">
@@ -658,6 +659,7 @@ if (typeof save.sail === 'number') {   // alter Speicherstand: nur eine Segelfar
   save.boat = { main: old, jib: old, hull: '#ffffff' }; delete save.sail;
 }
 if (save.name) save.name = String(save.name).slice(0, 10);
+// Gesperrter Name aus altem Speicherstand wird beim Laden verworfen (Prüfung nach dem Laden der Liste, siehe renderStart)
 const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
 const ALLE = new URLSearchParams(location.search).has('alle');   // Lehrkraft: ?alle schaltet alles frei
 const unlocked = i => ALLE || i === 0 || !!save.best[i - 1];
@@ -666,6 +668,26 @@ const unlocked = i => ALLE || i === 0 || !!save.best[i - 1];
 function show(id) {
   ['vStart', 'vRaces', 'vRace', 'vResult'].forEach(v => $(v).classList.toggle('hidden', v !== id));
   window.scrollTo(0, 0);
+}
+/* ---------- Namensfilter: gängige Schimpfwörter und Beleidigungen sind als Bootsname gesperrt ----------
+   Liste base64-kodiert, damit sie beim Blick in den Quelltext nicht im Klartext steht.
+   s = irgendwo im Namen, a = am Namensanfang, w = als ganzes Wort.  */
+const BAD = JSON.parse(atob('eyJzIjogWyJuZWdlciIsICJuaWdnZXIiLCAibmlnZ2EiLCAiaHVyZW5zb2huIiwgImh1cmUiLCAibnV0dGUiLCAid2ljaHNlciIsICJ3aXhlciIsICJ3aWNocyIsICJmb3R6ZSIsICJzY2hsYW1wZSIsICJmaWNrZXIiLCAiZmlja2VuIiwgImZpY2siLCAibXV0dGVyZmlja2VyIiwgIm1pc3NnZWJ1cnQiLCAic3Bhc3RpIiwgImJlaGluZGkiLCAic2Nod3VjaHRlbCIsICJ0cmFuc2UiLCAia2FuYWtlIiwgInppZ2V1bmVyIiwgImp1ZGVuc2F1IiwgIm5hemkiLCAiaGl0bGVyIiwgInNpZWdoZWlsIiwgInBlbmlzIiwgInBpbW1lbCIsICJzY2h3YW56IiwgIm11c2NoaSIsICJ0aXR0ZW4iLCAiYXJzY2hsb2NoIiwgImJhc3RhcmQiLCAibWlzdHN0dWVjayIsICJkcmVja3N0dWVjayIsICJiaXRjaCIsICJmdWNrIiwgInNoaXQiLCAic2NoZWlzcyIsICJwaXNzZXIiLCAicG9ybm8iLCAidmVyZ2V3YWx0aWciLCAiZGVpbmVtdXR0ZXIiLCAiZGVpbm11ZGRhIiwgInlhcnJhayIsICJ5YXJhayIsICJvcm9zcHUiLCAic2lrdGlyIiwgImthaHBlIiwgInNjaGxpdHphdWdlIiwgIm51dHRlbnNvaG4iLCAiaHVyZW5raW5kIiwgIndpeHhlciIsICJjdW50IiwgInNleHkiXSwgImEiOiBbImFyc2NoIiwgImthY2siLCAic3Bhc3QiLCAib3BmZXIiXSwgInciOiBbImFtayIsICJoZWlsIiwgInBpYyIsICJoaCIsICJuc2RhcCIsICJzcyIsICJra2siLCAiODgiLCAic2V4IiwgIm1vbmdvIl19'));
+function normName(t) {
+  return t.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[0@4]/g, m => ({ '0': 'o', '@': 'a', '4': 'a' }[m])).replace(/[1!|]/g, 'i').replace(/3/g, 'e')
+    .replace(/[5$]/g, 's').replace(/7/g, 't').replace(/€/g, 'e');
+}
+const squeeze = t => t.replace(/(.)\1+/g, '$1');
+function nameErlaubt(name) {
+  const n = normName(name || '');
+  const words = n.split(/[^a-z0-9]+/).filter(Boolean);
+  const flat = n.replace(/[^a-z0-9]/g, '').replace(/ignazi/g, '');   // harmlose Namen, die ein gesperrtes Wort enthalten
+  const forms = [flat, squeeze(flat)];
+  if (BAD.s.some(b => forms.some(f => f.includes(b) || f.includes(squeeze(b))))) return false;
+  if (BAD.a.some(b => forms.some(f => f.startsWith(b)) || words.some(w => w.startsWith(b)))) return false;
+  if (BAD.w.some(b => words.includes(b) || flat === b)) return false;
+  return true;
 }
 // Boot fährt nach rechts: Bug rechts, Vorsegel vor dem Mast, Großsegel dahinter. Name steht auf dem Rumpf.
 const NAME_MAX = 10;
@@ -688,13 +710,19 @@ function renderStart() {
   $('boatPicker').innerHTML = PARTS.map(([key, label, cols]) => `<div class="crow"><small>${label}</small><div class="swatches">${
     cols.map(([n, c]) => `<button class="sw ${save.boat[key] === c ? 'sel' : ''}" data-part="${key}" data-c="${c}" title="${n}" aria-label="${label}: ${n}" style="background:${c}"></button>`).join('')
   }</div></div>`).join('');
+  if (save.name && !nameErlaubt(save.name)) { save.name = ''; persist(); }
   $('boatName').value = save.name || '';
 }
 $('boatPicker').addEventListener('click', e => {
   const b = e.target.closest('.sw'); if (!b) return;
   save.boat[b.dataset.part] = b.dataset.c; persist(); renderStart();
 });
-$('boatName').addEventListener('input', e => { save.name = e.target.value.trim().slice(0, NAME_MAX); persist(); $('boatPreview').innerHTML = boatSVG(108); });
+$('boatName').addEventListener('input', e => {
+  const name = e.target.value.trim().slice(0, NAME_MAX), ok = nameErlaubt(name);
+  e.target.style.borderColor = ok ? '' : 'var(--bad)';
+  $('nameHinweis').classList.toggle('hidden', ok);
+  save.name = ok ? name : ''; persist(); $('boatPreview').innerHTML = boatSVG(108);
+});
 $('toRaces').onclick = () => { renderRaces(); show('vRaces'); };
 $('backStart').onclick = () => { renderStart(); show('vStart'); };
 
