@@ -109,6 +109,10 @@ ul.tight li{margin:.2rem 0}
 sup{font-size:.7em}
 .rt{white-space:nowrap}
 .rt .rad{border-top:1.5px solid currentColor;padding:0 .12em;margin-left:.05em}
+.vorsilben{border-collapse:collapse;width:100%;font-size:.95rem;margin-bottom:4px}
+.vorsilben th,.vorsilben td{border:1px solid var(--line);padding:3px 8px;text-align:left}
+.vorsilben th{background:var(--soft);font-size:.82rem}
+.vorsilben tr.mark td{background:#fff3c4;font-weight:700}
 .waiting{color:var(--muted);font-style:italic;text-align:center;padding:16px}
 
 /* Ergebnis */
@@ -142,6 +146,7 @@ sup{font-size:.7em}
       <h2>Spickzettel</h2>
       <div class="rule"><b>Potenz:</b><br><span class="f">3<sup>4</sup> = 3 · 3 · 3 · 3 = 81</span> (Basis 3, Exponent 4)</div>
       <div class="rule"><b>Zehnerpotenz:</b><br><span class="f">52 000 = 5,2 · 10<sup>4</sup></span><br><span class="f">0,0031 = 3,1 · 10<sup>−3</sup></span></div>
+      <div class="rule"><b>Vorsilben bei Einheiten:</b><br><span class="f">Kilo k = 10<sup>3</sup></span>, <span class="f">Mega M = 10<sup>6</sup></span>, <span class="f">Giga G = 10<sup>9</sup></span><br><span class="f">Milli m = 10<sup>−3</sup></span>, <span class="f">Mikro µ = 10<sup>−6</sup></span>, <span class="f">Nano n = 10<sup>−9</sup></span></div>
       <div class="rule"><b>Quadratwurzel:</b><br><span class="f"><span class="rt">√<span class="rad">49</span></span> = 7</span>, denn <span class="f">7<sup>2</sup> = 49</span></div>
       <div class="rule"><b>Kubikwurzel:</b><br><span class="f"><span class="rt">∛<span class="rad">64</span></span> = 4</span>, denn <span class="f">4<sup>3</sup> = 64</span></div>
       <div class="rule"><b>Quadrat und Würfel:</b><br><span class="f">Seite a = <span class="rt">√<span class="rad">A</span></span></span><br><span class="f">Kante a = <span class="rt">∛<span class="rad">V</span></span></span></div>
@@ -283,6 +288,12 @@ const FIGUREN = [
   [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
 ];
 
+const VORSILBEN = [['Giga', 'G', 9], ['Mega', 'M', 6], ['Kilo', 'k', 3], ['—', '', 0], ['Zenti', 'c', -2], ['Milli', 'm', -3], ['Mikro', 'µ', -6], ['Nano', 'n', -9]];
+function vorsilbenTabelle(mark = []) {
+  return `<table class="vorsilben"><thead><tr><th>Vorsilbe</th><th>Zeichen</th><th>bedeutet</th></tr></thead><tbody>${
+    VORSILBEN.map(([n, z, e]) => `<tr class="${mark.includes(z) ? 'mark' : ''}"><td>${n}</td><td>${z ? z + 'm' : 'm'}</td><td>${e === 0 ? '1' : '10<sup>' + fmt(e) + '</sup>'}</td></tr>`).join('')
+  }</tbody></table><small class="muted">Beispiel: 1 km = 10<sup>3</sup> m, 1 mm = 10<sup>−3</sup> m</small>`;
+}
 /* ---------- Aufgabengeneratoren ----------
    Jede Aufgabe: { title, q, sketch, type: 'num'|'mc'|'sci'|'surd', ...Lösung, hint, sol:[Schritte] } */
 const G = {
@@ -404,17 +415,18 @@ const G = {
   },
   einheiten() {
     const c = pick([
-      { obj: 'Ein Segeltuch', v: pick([0.3, 0.35, 0.4]), u: 'mm', to: 'µm (Mikrometer)', f: 1000, rel: '1 mm = 1 000 µm' },
-      { obj: 'Eine dünne Angelschnur', v: pick([0.12, 0.15, 0.2]), u: 'mm', to: 'µm (Mikrometer)', f: 1000, rel: '1 mm = 1 000 µm' },
-      { obj: 'Eine Lackschicht auf dem Bootsrumpf', v: pick([0.08, 0.05, 0.06]), u: 'mm', to: 'nm (Nanometer)', f: 1e6, rel: '1 mm = 1 000 000 nm' },
-      { obj: 'Ein Wassertropfen', v: pick([2, 3, 4]), u: 'mm', to: 'nm (Nanometer)', f: 1e6, rel: '1 mm = 1 000 000 nm' }
+      { txt: 'Ein Segeltuch ist', v: pick([0.3, 0.35, 0.4]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
+      { txt: 'Eine dünne Angelschnur ist', v: pick([0.12, 0.15, 0.2]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
+      { txt: 'Ein Haar ist etwa', v: pick([0.06, 0.07, 0.08]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
+      { txt: 'Eine Lackschicht auf dem Bootsrumpf ist', v: pick([0.08, 0.05, 0.06]), was: 'dick', to: 'nm', name: 'Nanometer', e: 6 },
+      { txt: 'Ein Regentropfen hat', v: pick([2, 3, 4]), was: 'Durchmesser', to: 'nm', name: 'Nanometer', e: 6 }
     ]);
-    const res = Number((c.v * c.f).toPrecision(8));
+    const f = Math.pow(10, c.e), res = Number((c.v * f).toPrecision(8)), pe = c.to === 'µm' ? -6 : -9;
     return {
-      title: 'Kleine Größen', q: `${c.obj} ist ${fmt(c.v)} ${c.u} dick. Gib die Dicke in ${c.to} an.<br><small class="muted">Es gilt: ${c.rel}</small>`,
-      type: 'num', ans: res, post: c.to.split(' ')[0],
-      hint: `Multipliziere ${fmt(c.v)} mit ${fmt(c.f)}. Bei Zehnerzahlen heißt das: Komma nach rechts verschieben.`,
-      sol: [`${fmt(c.v)} · ${fmt(c.f)} = ${fmt(res)}`, `Die Dicke beträgt ${fmt(res)} ${c.to.split(' ')[0]}.`]
+      title: 'Kleine Größen', q: `${c.txt} <b>${fmt(c.v)} mm</b> ${c.was === 'dick' ? 'dick' : c.was}. Gib das in <b>${c.to}</b> (${c.name}) an.<br><small class="muted">Nutze die Tabelle mit den Vorsilben.</small>`,
+      sketch: vorsilbenTabelle(['m', c.to[0]]), type: 'num', ans: res, post: c.to,
+      hint: `Milli bedeutet 10<sup>−3</sup>, ${c.name.replace('meter', '')} bedeutet 10<sup>${pe}</sup>. Der Unterschied sind ${c.e} Stellen, also 1 mm = ${fmt(f)} ${c.to}.`,
+      sol: [`1 mm = 10<sup>−3</sup> m &nbsp; und &nbsp; 1 ${c.to} = 10<sup>${pe}</sup> m`, `Unterschied: ${c.e} Zehnerstellen → 1 mm = 10<sup>${c.e}</sup> ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)} ${c.to}`]
     };
   },
 
