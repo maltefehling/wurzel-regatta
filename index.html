@@ -889,11 +889,37 @@ $('raceList').addEventListener('click', e => {
 /* ---------- Szene ---------- */
 const BOAT_Y = 158, START_X = 55, FINISH_X = 950;
 const buoyX = (i, n) => 190 + i * (690 / Math.max(1, n - 1));
+/* Jede Regatta zu einer anderen Tageszeit: Himmel, Sonne/Mond, See und ein Farbschleier über dem Ufer */
+const TAGESZEITEN = [
+  { name: '🌅 Morgen', sky: ['#f4b998', '#fde7cf'], lake: ['#8fbcd8', '#3d7fae'], sun: { x: 120, y: 24, r: 20, c: '#ff9f4a' }, tint: ['#ffb38a', .14] },
+  { name: '☀️ Vormittag', sky: ['#bfe3ff', '#eef8ff'], lake: ['#5cb0e0', '#1f6fa8'], sun: { x: 880, y: 32, r: 18, c: '#ffd166' }, tint: null },
+  { name: '🌤️ Mittag', sky: ['#8ccaff', '#dff1ff'], lake: ['#4aa6e2', '#16609e'], sun: { x: 720, y: 16, r: 16, c: '#fff3a6' }, tint: null },
+  { name: '🌇 Abend', sky: ['#f9844a', '#ffd79a'], lake: ['#d98b62', '#24527e'], sun: { x: 905, y: 28, r: 24, c: '#ff4d26' }, tint: ['#ff7a3a', .2] },
+  { name: '🌙 Nacht', sky: ['#0b1733', '#2c3f6b'], lake: ['#24416e', '#0a1a35'], moon: { x: 860, y: 30, r: 13 }, tint: ['#08132e', .55] }
+];
+function himmelSVG(tz) {
+  if (tz.moon) {
+    let stars = '';
+    for (let i = 0; i < 40; i++) stars += `<circle cx="${(i * 97 + 13) % 1000}" cy="${4 + (i * 37) % 52}" r="${i % 5 ? .8 : 1.4}" fill="#fff" opacity="${.5 + (i % 3) * .2}"/>`;
+    const m = tz.moon;
+    return stars + `<circle cx="${m.x}" cy="${m.y}" r="${m.r + 7}" fill="#f5f3dc" opacity=".12"/><circle cx="${m.x}" cy="${m.y}" r="${m.r}" fill="#f5f3dc"/><circle cx="${m.x + 6}" cy="${m.y - 4}" r="${m.r}" fill="${tz.sky[0]}"/>`;
+  }
+  const u = tz.sun;
+  return `<circle cx="${u.x}" cy="${u.y}" r="${u.r + 10}" fill="${u.c}" opacity=".25"/><circle cx="${u.x}" cy="${u.y}" r="${u.r}" fill="${u.c}"/>`;
+}
+// nachts leuchten einzelne Fenster im Schloss, im Anbau und in den Dorfhäusern
+function lichterSVG() {
+  let l = '';
+  [[533, 62], [553, 62], [573, 71], [543, 71], [581, 62], [623, 74], [645, 83], [612, 83]].forEach(([x, y]) => l += `<rect x="${x}" y="${y}" width="3.4" height="5" fill="#ffd36b"/>`);
+  for (let i = 0; i < 26; i++) l += `<rect x="${(i * 151 + 40) % 980}" y="${62 + (i * 23) % 24}" width="2.5" height="2.5" fill="#ffd36b" opacity=".9"/>`;
+  return l + '<circle cx="506.5" cy="42" r="3" fill="#fff4c2"/>';
+}
 function drawScene(n) {
+  const tz = TAGESZEITEN[st ? st.lvl : 1] || TAGESZEITEN[1], night = !!tz.moon;
   let waves = '';
   for (let i = 0; i < 9; i++) {
     const y = 118 + (i % 3) * 30, x = (i * 117) % 1000;
-    waves += `<path class="wave" style="animation-delay:${-i * .4}s" d="M${x} ${y} q12 -6 24 0 t24 0" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/>`;
+    waves += `<path class="wave" style="animation-delay:${-i * .4}s" d="M${x} ${y} q12 -6 24 0 t24 0" fill="none" stroke="rgba(255,255,255,${night ? .3 : .55})" stroke-width="2"/>`;
   }
   let buoys = '';
   for (let i = 0; i < n; i++) {
@@ -905,14 +931,16 @@ function drawScene(n) {
   }
   $('scene').innerHTML = `
     <defs>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#eef8ff"/></linearGradient>
-      <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cb0e0"/><stop offset="1" stop-color="#1f6fa8"/></linearGradient>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tz.sky[0]}"/><stop offset="1" stop-color="${tz.sky[1]}"/></linearGradient>
+      <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tz.lake[0]}"/><stop offset="1" stop-color="${tz.lake[1]}"/></linearGradient>
       <pattern id="bwStripes" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#fff"/><rect width="5" height="10" fill="#005ca9"/></pattern>
       <pattern id="checker" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern>
     </defs>
     <rect width="1000" height="104" fill="url(#sky)"/>
-    <circle cx="880" cy="32" r="18" fill="#ffd166"/>
+    ${himmelSVG(tz)}
     ${shoreSVG()}
+    ${tz.tint ? `<rect width="1000" height="104" fill="${tz.tint[0]}" opacity="${tz.tint[1]}"/>` : ''}
+    ${night ? lichterSVG() : ''}
     <rect y="102" width="1000" height="108" fill="url(#lake)"/>
     ${waves}
     <g transform="translate(${START_X - 20},${BOAT_Y})"><line x1="0" y1="10" x2="0" y2="-40" stroke="#334155" stroke-width="2.5"/><path d="M0 -40 L18 -33 L0 -26Z" fill="#facc15"/><text x="0" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">START</text></g>
@@ -1035,7 +1063,7 @@ const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 function updateBar() {
   if (!eggDone && !st.pauseStart && (eggClock += 0.5) >= eggAt) herthaEgg();
   const r = RACES[st.lvl];
-  $('cRace').textContent = `${st.lvl + 1}. ${r.name}`;
+  $('cRace').textContent = `${st.lvl + 1}. ${r.name} · ${TAGESZEITEN[st.lvl].name}`;
   $('cBuoy').textContent = `Boje ${Math.min(st.i + 1, r.n)}/${r.n}`;
   $('cKringel').textContent = `Strafkringel: ${'⭕'.repeat(st.kringel)}${'○'.repeat(Math.max(0, MAX_KRINGEL - st.kringel))}`;
   const t = elapsed();
