@@ -2,7 +2,13 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Regatta">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
 <title>Wurzel-Regatta</title>
 <meta name="description" content="Segelregatta auf dem Untersee: Potenzen, Zehnerpotenzen und Wurzeln für Klasse 9 (Realschule).">
 <style>
@@ -20,14 +26,14 @@ h2{font-size:1.2rem;margin:.2rem 0 .6rem}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:760px){.grid2{grid-template-columns:1fr}}
-button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.55rem .9rem}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.55rem .9rem}
 button.primary{background:var(--sea);border-color:var(--sea);color:#fff;font-weight:600}
 button.primary:hover{background:#185d8d}
 button:disabled{opacity:.45;cursor:default}
 .hidden{display:none!important}
 .muted{color:var(--muted)}
 small{font-size:.85rem}
-#soundBtn{position:fixed;right:14px;bottom:14px;z-index:20;width:48px;height:48px;border-radius:50%;font-size:1.35rem;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#soundBtn{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:20;width:48px;height:48px;border-radius:50%;font-size:1.35rem;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin:18px 0 6px}
 
 /* Start */
@@ -37,7 +43,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin:18px 0 6px}
 .crow{margin:.15rem 0 .5rem}
 .crow small{display:block;font-weight:600;color:var(--muted);margin-bottom:3px}
 .swatches{display:flex;flex-wrap:wrap;gap:6px}
-.sw{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #cbd5e1}
+.sw{width:38px;height:38px;padding:0;border-radius:50%;border:2px solid #cbd5e1}
 .sw.sel{outline:3px solid var(--sea);outline-offset:2px}
 label{font-weight:600;font-size:.92rem}
 input[type=text]{font:inherit;padding:.5rem .6rem;border:1px solid var(--line);border-radius:8px;width:100%;max-width:280px;display:block;margin:.3rem 0 1rem}
