@@ -716,7 +716,8 @@ const RACES = [
   { name: 'Rund um die Höri', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
     gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'wuerfelGebilde'] },
   { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 30 * 60,
-    gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'gebildeOberflaeche'] }
+    must: ['teilweiseZusammen', 'teilweiseZusammen'],   // kommt in jedem Rennen genau zweimal vor
+    gens: ['zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'gebildeOberflaeche'] }
 ];
 const SAIL_COLORS = [['Weiß', '#f8fafc'], ['Rot', '#e4572e'], ['Orange', '#f97316'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57'],
   ['Türkis', '#14b8a6'], ['Blau', '#2563eb'], ['Lila', '#7c3aed'], ['Pink', '#ec4899'], ['Schwarz', '#1f2937']];
@@ -1029,9 +1030,14 @@ function updateBar() {
   $('cTime').textContent = `${st.pauseStart ? '⏸' : '⏱'} ${mmss(t)} / ${mmss(r.soll)}`;
   $('cTime').style.color = t > r.soll ? 'var(--bad)' : '';
 }
+// Pflicht-Aufgaben (must) immer dabei, der Rest zufällig aufgefüllt; alles gemischt
+function raceOrder(r) {
+  const must = r.must || [];
+  return shuffle([...must, ...shuffle(r.gens.slice()).slice(0, Math.max(0, r.n - must.length))]);
+}
 function startRace(lvl) {
   const r = RACES[lvl];
-  st = { lvl, i: 0, kringel: 0, tipps: 0, penalty: 0, paused: 0, pauseStart: null, t0: Date.now(), order: shuffle(r.gens.slice()), task: null, busy: true };
+  st = { lvl, i: 0, kringel: 0, tipps: 0, penalty: 0, paused: 0, pauseStart: null, t0: Date.now(), order: raceOrder(r), task: null, busy: true };
   drawScene(r.n);
   show('vRace');
   $('taskCard').innerHTML = `<div class="waiting">Startschuss! Dein Boot segelt zur ersten Boje …</div>`;
