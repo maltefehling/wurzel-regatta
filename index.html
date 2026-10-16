@@ -49,6 +49,7 @@ label{font-weight:600;font-size:.92rem}
 input[type=text]{font:inherit;padding:.5rem .6rem;border:1px solid var(--line);border-radius:8px;width:100%;max-width:280px;display:block;margin:.3rem 0 1rem}
 .rule{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
 .rule b{color:var(--sea)}
+.rule .f{white-space:nowrap}
 ul.tight{margin:.3rem 0;padding-left:1.2rem}
 ul.tight li{margin:.2rem 0}
 
@@ -139,13 +140,14 @@ sup{font-size:.7em}
     </div>
     <div class="card">
       <h2>Spickzettel</h2>
-      <div class="rule"><b>Potenz:</b> 3<sup>4</sup> = 3 · 3 · 3 · 3 = 81 &nbsp;(Basis 3, Exponent 4)</div>
-      <div class="rule"><b>Zehnerpotenz:</b> 52 000 = 5,2 · 10<sup>4</sup><br>0,0031 = 3,1 · 10<sup>−3</sup></div>
-      <div class="rule"><b>Quadratwurzel:</b> <span class="rt">√<span class="rad">49</span></span> = 7, denn 7<sup>2</sup> = 49<br><b>Kubikwurzel:</b> <span class="rt">∛<span class="rad">64</span></span> = 4, denn 4<sup>3</sup> = 64</div>
-      <div class="rule"><b>Quadrat:</b> Seite a = <span class="rt">√<span class="rad">A</span></span><br><b>Würfel:</b> Kante a = <span class="rt">∛<span class="rad">V</span></span></div>
-      <div class="rule"><b>Wurzelgesetze:</b> <span class="rt">√<span class="rad">a</span></span> · <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a · b</span></span><br><span class="rt">√<span class="rad">a</span></span> : <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a : b</span></span></div>
-      <div class="rule"><b>Teilweise Wurzel ziehen:</b> <span class="rt">√<span class="rad">50</span></span> = <span class="rt">√<span class="rad">25 · 2</span></span> = 5<span class="rt">√<span class="rad">2</span></span></div>
-      <div class="rule"><b>Zusammenfassen:</b> nur gleiche Wurzeln! 4<span class="rt">√<span class="rad">3</span></span> + 2<span class="rt">√<span class="rad">3</span></span> = 6<span class="rt">√<span class="rad">3</span></span></div>
+      <div class="rule"><b>Potenz:</b><br><span class="f">3<sup>4</sup> = 3 · 3 · 3 · 3 = 81</span> (Basis 3, Exponent 4)</div>
+      <div class="rule"><b>Zehnerpotenz:</b><br><span class="f">52 000 = 5,2 · 10<sup>4</sup></span><br><span class="f">0,0031 = 3,1 · 10<sup>−3</sup></span></div>
+      <div class="rule"><b>Quadratwurzel:</b><br><span class="f"><span class="rt">√<span class="rad">49</span></span> = 7</span>, denn <span class="f">7<sup>2</sup> = 49</span></div>
+      <div class="rule"><b>Kubikwurzel:</b><br><span class="f"><span class="rt">∛<span class="rad">64</span></span> = 4</span>, denn <span class="f">4<sup>3</sup> = 64</span></div>
+      <div class="rule"><b>Quadrat und Würfel:</b><br><span class="f">Seite a = <span class="rt">√<span class="rad">A</span></span></span><br><span class="f">Kante a = <span class="rt">∛<span class="rad">V</span></span></span></div>
+      <div class="rule"><b>Wurzelgesetze:</b><br><span class="f"><span class="rt">√<span class="rad">a</span></span> · <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a · b</span></span></span><br><span class="f"><span class="rt">√<span class="rad">a</span></span> : <span class="rt">√<span class="rad">b</span></span> = <span class="rt">√<span class="rad">a : b</span></span></span></div>
+      <div class="rule"><b>Teilweise Wurzel ziehen:</b><br><span class="f"><span class="rt">√<span class="rad">50</span></span> = <span class="rt">√<span class="rad">25 · 2</span></span> = 5<span class="rt">√<span class="rad">2</span></span></span></div>
+      <div class="rule"><b>Zusammenfassen (nur gleiche Wurzeln):</b><br><span class="f">4<span class="rt">√<span class="rad">3</span></span> + 2<span class="rt">√<span class="rad">3</span></span> = 6<span class="rt">√<span class="rad">3</span></span></span></div>
       <h2 style="margin-top:14px">So wird gewertet</h2>
       <ul class="tight">
         <li>Falsche Antwort: <b>Strafkringel</b> (+20 Sekunden). Du siehst den Lösungsweg und bekommst eine neue, ähnliche Aufgabe. Solange du den Lösungsweg liest, ist die Uhr angehalten.</li>
