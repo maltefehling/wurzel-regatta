@@ -278,6 +278,37 @@ function skRechteck(la, lb, inner = 'A = ?') {
     <text x="130" y="162" text-anchor="middle" font-size="17">${la}</text>
     <text x="232" y="86" font-size="17">${lb}</text>`);
 }
+/* Körper aus gleichen Würfeln im Schrägbild. cells: [x, y, z] mit y = Höhe, z = Tiefe (nach hinten-oben) */
+const KOERPER = {
+  reihe2: { name: 'zwei Würfeln in einer Reihe', cells: [[0, 0, 0], [1, 0, 0]] },
+  reihe3: { name: 'drei Würfeln in einer Reihe', cells: [[0, 0, 0], [1, 0, 0], [2, 0, 0]] },
+  turm3: { name: 'drei aufeinandergestapelten Würfeln', cells: [[0, 0, 0], [0, 1, 0], [0, 2, 0]] },
+  L4: { name: 'vier Würfeln', cells: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0]] },
+  T4: { name: 'vier Würfeln', cells: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [1, 1, 0]] },
+  block4: { name: 'vier Würfeln', cells: [[0, 0, 1], [1, 0, 1], [0, 0, 0], [1, 0, 0]] },
+  treppe6: { name: 'sechs Würfeln', cells: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [1, 1, 0], [0, 2, 0]] },
+  podest6: { name: 'sechs Würfeln', cells: [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0], [1, 2, 0], [2, 0, 0]] },
+  block8: { name: 'acht Würfeln', cells: [[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1], [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]] }
+};
+function skKoerper(cells, label, frage = 'a = ?') {
+  const s = 46, d = 0.5;                                      // Kantenlänge in px, Verkürzung der Tiefe
+  const P = (x, y, z) => [x * s + z * s * d, -(y * s + z * s * d)];
+  const order = cells.slice().sort((a, b) => b[2] - a[2] || a[1] - b[1] || a[0] - b[0]);   // von hinten nach vorne
+  let faces = '';
+  for (const [x, y, z] of order) {
+    const q = pts => pts.map(([a, b, c]) => P(a, b, c).join(',')).join(' ');
+    faces += `<polygon points="${q([[x + 1, y, z], [x + 1, y, z + 1], [x + 1, y + 1, z + 1], [x + 1, y + 1, z]])}" fill="#93c5fd" stroke="#2563eb" stroke-width="2"/>`;
+    faces += `<polygon points="${q([[x, y + 1, z], [x + 1, y + 1, z], [x + 1, y + 1, z + 1], [x, y + 1, z + 1]])}" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>`;
+    faces += `<polygon points="${q([[x, y, z], [x + 1, y, z], [x + 1, y + 1, z], [x, y + 1, z]])}" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>`;
+  }
+  const xs = [], ys = [];
+  cells.forEach(([x, y, z]) => [[x, y, z], [x + 1, y + 1, z + 1], [x + 1, y, z + 1], [x, y + 1, z]].forEach(c => { const [a, b] = P(...c); xs.push(a); ys.push(b); }));
+  const minX = Math.min(...xs) - 10, maxX = Math.max(...xs) + 10, minY = Math.min(...ys) - 10, maxY = Math.max(...ys) + 58;
+  const w = Math.max(maxX - minX, 200), cx = (minX + maxX) / 2;
+  return `<svg viewBox="${cx - w / 2} ${minY} ${w} ${maxY - minY}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">${faces}
+    <text x="${cx}" y="${maxY - 32}" text-anchor="middle" font-size="16" font-weight="600" fill="#1d2b36">${label}</text>
+    <text x="${cx}" y="${maxY - 10}" text-anchor="middle" font-size="16" font-weight="700" fill="#c2410c">${frage}</text></svg>`;
+}
 const FIGUREN = [
   [[0, 0], [1, 0], [2, 0]],
   [[0, 0], [0, 1], [1, 1], [2, 1]],
@@ -496,6 +527,28 @@ const G = {
         : [`${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(V)}`, `also ${cb(fmt(V))} = ${fmt(a)}`]
     };
   },
+  wuerfelGebilde() {
+    const key = pick(['L4', 'T4', 'block4', 'treppe6', 'podest6', 'block8', 'reihe3', 'turm3']), K = KOERPER[key], k = K.cells.length;
+    const a = pick([R(2, 9), R(2, 9), R(12, 35) / 10]), V = Number((k * a ** 3).toPrecision(10));
+    const ctx = key === 'podest6' ? 'Das Siegerpodest der Regatta' : key === 'treppe6' ? 'Eine Treppe zum Steg' : pick(['Ein Fundament für den Bootssteg', 'Ein Stapel Proviantkisten', 'Ein Ballastblock für eine Boje']);
+    return {
+      title: 'Körper aus Würfeln', q: `${ctx} besteht aus <b>${k} gleich großen Würfeln</b>. Zusammen haben sie das Volumen <b>${fmt(V)} dm³</b>. Wie lang ist die Kante eines Würfels?`,
+      sketch: skKoerper(K.cells, `V gesamt = ${fmt(V)} dm³`), type: 'num', ans: a, post: 'dm',
+      hint: `Zähle die Würfel (${k}) und rechne aus, wie groß das Volumen eines einzelnen Würfels ist. Dann ziehst du die Kubikwurzel.`,
+      sol: [`Ein Würfel: ${fmt(V)} : ${k} = ${fmt(a ** 3)} dm³`, `a = ${cb(fmt(a ** 3))} = ${fmt(a)} dm`, `Probe: ${fmt(a)} · ${fmt(a)} · ${fmt(a)} = ${fmt(a ** 3)}`]
+    };
+  },
+  gebildeOberflaeche() {
+    const key = pick(['reihe2', 'reihe3', 'turm3']), K = KOERPER[key], n = K.cells.length, faces = 4 * n + 2;
+    const a = R(2, 10), O = faces * a * a;
+    const ctx = key === 'turm3' ? `Ein Turm aus ${n} würfelförmigen Kisten` : `Ein Schwimmsteg aus ${n} würfelförmigen Pontons`;
+    return {
+      title: 'Oberfläche eines Würfelkörpers', q: `${ctx} wird rundum gestrichen, auch unten. Die gestrichene Oberfläche ist <b>${O} dm²</b>. Wie lang ist die Kante eines Würfels?`,
+      sketch: skKoerper(K.cells, `O = ${O} dm²`), type: 'num', ans: a, post: 'dm',
+      hint: `Zähle, aus wie vielen Quadraten die Oberfläche besteht. Jeder Würfel hat 6 Flächen – aber wo zwei Würfel aneinanderstoßen, sind 2 Flächen verdeckt.`,
+      sol: [`Quadrate: ${n} · 6 = ${6 * n}, davon ${n - 1} · 2 = ${2 * (n - 1)} verdeckt → ${faces} Quadrate`, `Ein Quadrat: ${O} : ${faces} = ${a * a} dm²`, `a = ${sq(a * a)} = ${a} dm`]
+    };
+  },
   figurQuadrate() {
     const cells = pick(FIGUREN), k = cells.length, a = pick([R(2, 12), R(12, 45) / 10]), A = Number((k * a * a).toPrecision(10));
     return {
@@ -661,9 +714,9 @@ const RACES = [
   { name: 'Bodensee-Woche', sub: 'Quadrat- und Kubikwurzeln, Quadrate und Würfel', n: 7, soll: 14 * 60,
     gens: ['wurzelGanz', 'wurzelDez', 'einschachteln', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate'] },
   { name: 'Rund um die Höri', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
-    gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'figurQuadrate'] },
+    gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'wuerfelGebilde'] },
   { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 30 * 60,
-    gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'teilweiseZusammen'] }
+    gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'gebildeOberflaeche'] }
 ];
 const SAIL_COLORS = [['Weiß', '#f8fafc'], ['Rot', '#e4572e'], ['Orange', '#f97316'], ['Gelb', '#f4b400'], ['Grün', '#2e8b57'],
   ['Türkis', '#14b8a6'], ['Blau', '#2563eb'], ['Lila', '#7c3aed'], ['Pink', '#ec4899'], ['Schwarz', '#1f2937']];
@@ -989,7 +1042,7 @@ function startRace(lvl) {
 // Taschenrechner erlaubt überall dort, wo sonst schriftliches Rechnen die Zeit frisst.
 // Ohne Taschenrechner nur, wo die Regel bzw. das Kopfwissen selbst geübt wird und die Zahlen klein bleiben.
 const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'figurQuadrate',
-  'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel']);
+  'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel', 'wuerfelGebilde', 'gebildeOberflaeche']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
 function nextTask() {
   if (st.pauseStart) { st.paused += Date.now() - st.pauseStart; st.pauseStart = null; }
