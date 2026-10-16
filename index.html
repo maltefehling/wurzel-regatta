@@ -415,19 +415,20 @@ const G = {
     };
   },
   einheiten() {
+    // nur EINE Umwandlung: von Meter direkt in mm, µm oder nm (1 m = 10^e …)
     const c = pick([
-      { txt: 'Ein Segeltuch ist', v: pick([0.3, 0.35, 0.4]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
-      { txt: 'Eine dünne Angelschnur ist', v: pick([0.12, 0.15, 0.2]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
-      { txt: 'Ein Haar ist etwa', v: pick([0.06, 0.07, 0.08]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 3 },
-      { txt: 'Eine Lackschicht auf dem Bootsrumpf ist', v: pick([0.08, 0.05, 0.06]), was: 'dick', to: 'nm', name: 'Nanometer', e: 6 },
-      { txt: 'Ein Regentropfen hat', v: pick([2, 3, 4]), was: 'Durchmesser', to: 'nm', name: 'Nanometer', e: 6 }
+      { txt: 'Ein Regentropfen hat', v: pick([0.002, 0.003, 0.004]), was: 'Durchmesser', to: 'mm', name: 'Millimeter', e: 3 },
+      { txt: 'Ein Segeltuch ist', v: pick([0.0003, 0.0004, 0.00035]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 6 },
+      { txt: 'Eine dünne Angelschnur ist', v: pick([0.00012, 0.00015, 0.0002]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 6 },
+      { txt: 'Ein Haar ist etwa', v: pick([0.00006, 0.00007, 0.00008]), was: 'dick', to: 'µm', name: 'Mikrometer', e: 6 },
+      { txt: 'Eine Lackschicht auf dem Bootsrumpf ist', v: pick([0.00005, 0.00006, 0.00008]), was: 'dick', to: 'nm', name: 'Nanometer', e: 9 }
     ]);
-    const f = Math.pow(10, c.e), res = Number((c.v * f).toPrecision(8)), pe = c.to === 'µm' ? 6 : 9;
+    const f = Math.pow(10, c.e), res = Number((c.v * f).toPrecision(8));
     return {
-      title: 'Kleine Größen', q: `${c.txt} <b>${fmt(c.v)} mm</b> ${c.was === 'dick' ? 'dick' : c.was}. Gib das in <b>${c.to}</b> (${c.name}) an.<br><small class="muted">Nutze die Tabelle mit den Vorsilben.</small>`,
-      sketch: vorsilbenTabelle(['m', c.to[0]]), type: 'num', ans: res, post: c.to,
-      hint: `Aus der Tabelle: 1 m = 10<sup>3</sup> mm und 1 m = 10<sup>${pe}</sup> ${c.to}. Wie viele ${c.to} passen dann in 1 mm?`,
-      sol: [`1 m = 10<sup>3</sup> mm = ${fmt(1000)} mm &nbsp; und &nbsp; 1 m = 10<sup>${pe}</sup> ${c.to} = ${fmt(Math.pow(10, pe))} ${c.to}`, `1 mm = ${fmt(Math.pow(10, pe))} : ${fmt(1000)} ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)} ${c.to}`]
+      title: 'Kleine Größen', q: `${c.txt} <b>${fmt(c.v)} m</b> ${c.was}. Gib das in <b>${c.to}</b> (${c.name}) an.<br><small class="muted">Nutze die Tabelle mit den Vorsilben.</small>`,
+      sketch: vorsilbenTabelle([c.to[0]]), type: 'num', ans: res, post: c.to,
+      hint: `Aus der Tabelle: 1 m = 10<sup>${c.e}</sup> ${c.to}. Du rechnest also mal 10<sup>${c.e}</sup> – das Komma rückt ${c.e} Stellen nach rechts.`,
+      sol: [`1 m = 10<sup>${c.e}</sup> ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)}`, `${c.txt} ${fmt(res)} ${c.to} ${c.was}.`]
     };
   },
 
