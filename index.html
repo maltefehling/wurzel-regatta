@@ -963,10 +963,10 @@ function shoreSVG() {
     <rect x="503.5" y="26" width="1.4" height="9" fill="#64748b"/><rect x="506" y="26" width="1.4" height="9" fill="#64748b"/><rect x="508.5" y="26" width="1.4" height="9" fill="#64748b"/>
     <circle cx="506.5" cy="42" r="3" fill="#f8fafc" stroke="#334155" stroke-width=".7"/>
     <path d="M506.5 42 V40 M506.5 42 H508" stroke="#334155" stroke-width=".6"/>
-    <!-- Fahnenmast auf dem Turm: bei falscher Antwort wird eine schwarze Flagge gehisst -->
+    <!-- Fahnenmast auf dem Turm: blaue Flagge weht oben, bei falscher Antwort geht sie auf Halbmast -->
     <line x1="506.5" y1="21" x2="506.5" y2="0" stroke="#475569" stroke-width="1.3"/>
-    <g id="flagge" style="transition:transform 1.2s ease-out,opacity .4s;transform:translateY(12px);opacity:0">
-      <path class="flagwehen" d="M507.2 1 h15 l-3.5 5 l3.5 5 h-15 Z" fill="#111827"/>
+    <g id="flagge" style="transition:transform 1.4s ease-in-out;transform:translateY(0)">
+      <path class="flagwehen" d="M507.2 1 h15 l-3.5 5 l3.5 5 h-15 Z" fill="#2563eb"/>
     </g>
     <!-- Schloss Gaienhofen: Hauptbau mit steilem rotem Satteldach -->
     <rect x="516" y="82" width="16" height="12" fill="#9a968a"/>
@@ -1062,10 +1062,9 @@ function startRace(lvl) {
 const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'figurQuadrate',
   'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel', 'wuerfelGebilde', 'gebildeOberflaeche']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
-function flagge(hoch) {
-  const f = $('flagge'); if (!f) return;
-  f.style.opacity = hoch ? '1' : '0';
-  f.style.transform = hoch ? 'translateY(0)' : 'translateY(12px)';
+// halbmast = true: Flagge auf halbe Höhe (falsche Antwort); false: wieder ganz oben
+function flagge(halbmast) {
+  const f = $('flagge'); if (f) f.style.transform = halbmast ? 'translateY(9px)' : 'translateY(0)';
 }
 function nextTask() {
   flagge(false);
