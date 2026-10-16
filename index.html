@@ -80,6 +80,12 @@ ul.tight li{margin:.2rem 0}
   100%{transform:translate(0,0) scaleX(1)}}
 .flagwehen{animation:wehen 1.4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left center}
 @keyframes wehen{from{transform:skewY(-4deg) scaleX(1)}to{transform:skewY(4deg) scaleX(.9)}}
+.halfL{animation:sinkL 2.8s ease-in forwards}
+.halfR{animation:sinkR 2.8s ease-in forwards}
+@keyframes sinkL{0%{transform:none}8%{transform:translate(-2px,0) rotate(-3deg)}30%{transform:translate(-8px,2px) rotate(-20deg)}100%{transform:translate(-16px,95px) rotate(-38deg)}}
+@keyframes sinkR{0%{transform:none}8%{transform:translate(2px,0) rotate(3deg)}30%{transform:translate(8px,2px) rotate(22deg)}100%{transform:translate(18px,95px) rotate(40deg)}}
+.blase{animation:blase 1.6s ease-out forwards;opacity:0}
+@keyframes blase{0%{opacity:.9;transform:translateY(0)}100%{opacity:0;transform:translateY(-26px)}}
 .wave{animation:wave 3s ease-in-out infinite alternate}
 @keyframes wave{from{transform:translateX(-8px)}to{transform:translateX(8px)}}
 .buoy.done .buoytop{fill:#2e8b57}
@@ -784,6 +790,8 @@ const SFX = {
   gold:  () => { playSeq([[67, 1], [72, 1], [76, 1], [79, 2], [76, 1], [79, 4]], { beat: 0.11 });
                  playSeq([[48, 3], [55, 3], [48, 4]], { beat: 0.11, type: 'triangle', vol: 0.1 }); },
   dnf:   () => playSeq([[67, 2], [66, 2], [65, 2], [64, 6]], { beat: 0.12, type: 'triangle', vol: 0.1 }),
+  sink:  () => { playSeq([[64, 1], [60, 1], [57, 1], [52, 2], [48, 4]], { beat: 0.16, type: 'sawtooth', vol: 0.04 });
+                 playSeq([[null, 6], [84, .5], [null, .5], [88, .5], [null, 1], [86, .5]], { beat: 0.16, type: 'sine', vol: 0.05 }); },
   horn:  () => playSeq([[67, 2], [null, 1], [69, 2], [null, 1], [71, 4]], { beat: 0.12, type: 'sawtooth', vol: 0.035 }),
   title: () => {   // kleines Seemanns-Motiv, eigene Komposition
     playSeq([[67, .5], [72, .5], [72, .25], [74, .25], [76, .5], [76, .5], [74, .5], [72, .5], [74, 1],
@@ -1022,6 +1030,19 @@ function moveBoat(x, y = BOAT_Y, fast = false) {
   const b = $('boat'); b.classList.toggle('fast', fast);
   b.style.transform = `translate(${x}px,${y}px)`;
 }
+// Boot bricht in der Mitte auseinander und versinkt; die Wasserlinie schneidet die sinkenden Hälften ab
+function sinkBoat() {
+  const spin = $('boatSpin'); if (!spin) return;
+  spin.classList.remove('spin');
+  const half = side => `<g class="half${side}"><g clip-path="url(#bruch${side})"><g transform="scale(1.25)">${boatParts()}</g></g></g>`;
+  spin.innerHTML = `<defs>
+      <clipPath id="wasserlinie"><rect x="-90" y="-160" width="180" height="172"/></clipPath>
+      <clipPath id="bruchL"><rect x="-90" y="-160" width="90" height="220"/></clipPath>
+      <clipPath id="bruchR"><rect x="0" y="-160" width="90" height="220"/></clipPath>
+    </defs><g clip-path="url(#wasserlinie)">${half('L')}${half('R')}</g>
+    ${[-14, 4, 16, -4, 10].map((x, i) => `<circle class="blase" style="animation-delay:${1.6 + i * .25}s" cx="${x}" cy="10" r="${2 + (i % 3)}" fill="none" stroke="#fff" stroke-width="1.2"/>`).join('')}`;
+  sfx('sink');
+}
 function kringelAnim() {
   const s = $('boatSpin'); s.classList.remove('spin'); void s.getBBox(); s.classList.add('spin');
 }
@@ -1184,6 +1205,7 @@ function submit(mcVal) {
     if (st.kringel > MAX_KRINGEL) {
       $('fb').innerHTML = `<div class="fb bad">❌ Leider falsch. So geht's:${sol}</div><div class="btns"><button class="primary" id="dnf">Weiter</button></div>`;
       $('dnf').onclick = () => finish(true);
+      setTimeout(sinkBoat, 900);   // erst Strafkringel, dann geht das Boot unter
       return;
     }
     $('fb').innerHTML = `<div class="fb bad">❌ <b>Strafkringel!</b> (+20 s) So wäre es richtig gewesen:${sol}<small class="muted">⏸ Die Uhr ist angehalten, bis du weiterklickst – lies den Lösungsweg in Ruhe.</small></div>
@@ -1222,7 +1244,12 @@ function finish(dnf = false) {
 }
 $('giveUp').onclick = () => {
   if (!confirm('Regatta wirklich abbrechen?')) return;
-  clearInterval(timer); renderRaces(); show('vRaces');
+  clearInterval(timer); st.busy = true;
+  $('taskCard').querySelectorAll('input,button').forEach(el => el.disabled = true);
+  $('giveUp').disabled = true;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  sinkBoat();
+  setTimeout(() => { $('giveUp').disabled = false; renderRaces(); show('vRaces'); }, 3600);
 };
 
 renderStart();
