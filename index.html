@@ -145,8 +145,8 @@ sup{font-size:.7em}
     <div class="card">
       <h2>Spickzettel</h2>
       <div class="rule"><b>Potenz:</b><br><span class="f">3<sup>4</sup> = 3 · 3 · 3 · 3 = 81</span> (Basis 3, Exponent 4)</div>
-      <div class="rule"><b>Zehnerpotenz:</b><br><span class="f">52 000 = 5,2 · 10<sup>4</sup></span><br><span class="f">0,0031 = 3,1 · 10<sup>−3</sup></span></div>
-      <div class="rule"><b>Vorsilben bei Einheiten:</b><br><span class="f">Kilo k = 10<sup>3</sup></span>, <span class="f">Mega M = 10<sup>6</sup></span>, <span class="f">Giga G = 10<sup>9</sup></span><br><span class="f">Milli m = 10<sup>−3</sup></span>, <span class="f">Mikro µ = 10<sup>−6</sup></span>, <span class="f">Nano n = 10<sup>−9</sup></span></div>
+      <div class="rule"><b>Zehnerpotenz:</b><br><span class="f">52 000 = 5,2 · 10<sup>4</sup></span><br><span class="f">7 300 000 = 7,3 · 10<sup>6</sup></span></div>
+      <div class="rule"><b>Vorsilben bei Einheiten:</b><br><span class="f">1 km = 10<sup>3</sup> m (Kilo)</span>, <span class="f">1 Mm = 10<sup>6</sup> m (Mega)</span>, <span class="f">1 Gm = 10<sup>9</sup> m (Giga)</span><br><span class="f">1 m = 10<sup>3</sup> mm (Milli)</span>, <span class="f">1 m = 10<sup>6</sup> µm (Mikro)</span>, <span class="f">1 m = 10<sup>9</sup> nm (Nano)</span></div>
       <div class="rule"><b>Quadratwurzel:</b><br><span class="f"><span class="rt">√<span class="rad">49</span></span> = 7</span>, denn <span class="f">7<sup>2</sup> = 49</span></div>
       <div class="rule"><b>Kubikwurzel:</b><br><span class="f"><span class="rt">∛<span class="rad">64</span></span> = 4</span>, denn <span class="f">4<sup>3</sup> = 64</span></div>
       <div class="rule"><b>Quadrat und Würfel:</b><br><span class="f">Seite a = <span class="rt">√<span class="rad">A</span></span></span><br><span class="f">Kante a = <span class="rt">∛<span class="rad">V</span></span></span></div>
@@ -288,11 +288,13 @@ const FIGUREN = [
   [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
 ];
 
-const VORSILBEN = [['Giga', 'G', 9], ['Mega', 'M', 6], ['Kilo', 'k', 3], ['—', '', 0], ['Zenti', 'c', -2], ['Milli', 'm', -3], ['Mikro', 'µ', -6], ['Nano', 'n', -9]];
+// Ohne negative Exponenten (kennen die Schüler noch nicht): kleine Einheiten als „1 m = 10^n …“
+const VORSILBEN = [['Giga', 'G', 9], ['Mega', 'M', 6], ['Kilo', 'k', 3], ['Zenti', 'c', -2], ['Milli', 'm', -3], ['Mikro', 'µ', -6], ['Nano', 'n', -9]];
 function vorsilbenTabelle(mark = []) {
-  return `<table class="vorsilben"><thead><tr><th>Vorsilbe</th><th>Zeichen</th><th>bedeutet</th></tr></thead><tbody>${
-    VORSILBEN.map(([n, z, e]) => `<tr class="${mark.includes(z) ? 'mark' : ''}"><td>${n}</td><td>${z ? z + 'm' : 'm'}</td><td>${e === 0 ? '1' : '10<sup>' + fmt(e) + '</sup>'}</td></tr>`).join('')
-  }</tbody></table><small class="muted">Beispiel: 1 km = 10<sup>3</sup> m, 1 mm = 10<sup>−3</sup> m</small>`;
+  return `<table class="vorsilben"><thead><tr><th>Vorsilbe</th><th>Zeichen</th><th>Umrechnung</th></tr></thead><tbody>${
+    VORSILBEN.map(([n, z, e]) => `<tr class="${mark.includes(z) ? 'mark' : ''}"><td>${n}</td><td>${z}m</td><td>${
+      e > 0 ? `1 ${z}m = 10<sup>${e}</sup> m` : `1 m = 10<sup>${-e}</sup> ${z}m`}</td></tr>`).join('')
+  }</tbody></table>`;
 }
 /* ---------- Aufgabengeneratoren ----------
    Jede Aufgabe: { title, q, sketch, type: 'num'|'mc'|'sci'|'surd', ...Lösung, hint, sol:[Schritte] } */
@@ -358,30 +360,29 @@ const G = {
 
   /* ===== Regatta 2: Zehnerpotenzen ===== */
   sciExp() {
-    const big = Math.random() < .6;
     const m = pick([1.5, 2.4, 3.07, 4.8, 5.25, 6.1, 7.3, 8.06, 9.2, 2.75, 3.6]);
-    const e = big ? R(3, 9) : -R(2, 6);
+    const e = R(3, 9);
     const n = m * Math.pow(10, e);
     return {
       title: 'Zehnerpotenz', q: `Ergänze den Exponenten.<div class="big">${fmt(n)} = ${fmt(m)} · 10<sup>□</sup></div>`,
       type: 'num', ans: e, pre: '□ =',
-      hint: big ? 'Zähle, um wie viele Stellen das Komma nach links rückt, bis nur noch eine Ziffer vor dem Komma steht.' : 'Bei Zahlen kleiner als 1 rückt das Komma nach rechts – der Exponent wird negativ.',
-      sol: [`Das Komma rückt um ${Math.abs(e)} Stellen nach ${big ? 'links' : 'rechts'}.`, `${fmt(n)} = ${fmt(m)} · ${tenPow(e)}`]
+      hint: 'Zähle, um wie viele Stellen das Komma nach links rückt, bis nur noch eine Ziffer vor dem Komma steht.',
+      sol: [`Das Komma rückt um ${Math.abs(e)} Stellen nach links.`, `${fmt(n)} = ${fmt(m)} · ${tenPow(e)}`]
     };
   },
   sciVoll() {
     const facts = [
       ['Der Bodensee enthält etwa', 48000000000, 'm³ Wasser'],
       ['Die Wasserfläche des Bodensees ist etwa', 536000000, 'm² groß'],
-      ['Ein Segeltuch ist etwa', 0.00035, 'm dick'],
-      ['Ein Sandkorn am Strand hat etwa', 0.0006, 'm Durchmesser'],
+      ['Die Sonne ist etwa', 150000000, 'km von der Erde entfernt'],
+      ['Das Ufer des Bodensees ist etwa', 273000, 'm lang'],
       ['Auf einer großen Regatta werden etwa', 2400000, 'Liter Getränke verkauft'],
-      ['Eine Angelschnur ist etwa', 0.00025, 'm dick']
+      ['Licht legt pro Sekunde etwa', 300000000, 'm zurück']
     ];
     let txt, n, unit;
     if (Math.random() < .5) { [txt, n, unit] = pick(facts); }
     else {
-      const m = pick([2.6, 3.45, 4.1, 5.8, 7.25, 9.4, 1.35]); const e = pick([4, 5, 6, 7, -3, -4, -5]);
+      const m = pick([2.6, 3.45, 4.1, 5.8, 7.25, 9.4, 1.35]); const e = pick([4, 5, 6, 7, 8]);
       n = Number((m * Math.pow(10, e)).toPrecision(6));
       txt = 'Schreibe die Zahl'; unit = '';
     }
@@ -394,20 +395,20 @@ const G = {
     };
   },
   sciZuruck() {
-    const m = pick([3.07, 4.5, 6.02, 8.1, 1.25, 2.9, 7.04]), e = pick([3, 4, 5, 6, -2, -3, -4]);
+    const m = pick([3.07, 4.5, 6.02, 8.1, 1.25, 2.9, 7.04]), e = pick([3, 4, 5, 6, 7]);
     const n = Number((m * Math.pow(10, e)).toPrecision(8));
     return {
       title: 'Zurück zur Dezimalzahl', q: `Schreibe als Dezimalzahl.<div class="big">${fmt(m)} · ${tenPow(e)} = ?</div>`, type: 'num', ans: n,
-      hint: e > 0 ? `Mal ${tenPow(e)} heißt: Komma um ${e} Stellen nach rechts. Fehlende Stellen mit Nullen auffüllen.` : `Ein negativer Exponent heißt: Komma um ${-e} Stellen nach links.`,
+      hint: `Mal ${tenPow(e)} heißt: Komma um ${e} Stellen nach rechts. Fehlende Stellen mit Nullen auffüllen.`,
       sol: [`Komma um ${Math.abs(e)} Stellen nach ${e > 0 ? 'rechts' : 'links'} verschieben.`, `${fmt(m)} · ${tenPow(e)} = ${fmt(n)}`]
     };
   },
   technisch() {
-    const e = pick([3, 6, 9, -3, -6]);
+    const e = pick([3, 6, 9]);
     const lead = e > 0 ? pick([12, 45, 230, 7.5, 86, 310, 1.8]) : pick([25, 4.5, 120, 80, 3.2]);
     const n = Number((lead * Math.pow(10, e)).toPrecision(8));
     return {
-      title: 'Technische Schreibweise', q: `In der Technik sind nur Exponenten wie 3, 6, 9 oder −3, −6 erlaubt. Ergänze.<div class="big">${fmt(n)} = □ · ${tenPow(e)}</div>`,
+      title: 'Technische Schreibweise', q: `In der Technik nimmt man nur die Exponenten 3, 6 oder 9. Ergänze.<div class="big">${fmt(n)} = □ · ${tenPow(e)}</div>`,
       type: 'num', ans: lead, pre: '□ =',
       hint: `Schiebe das Komma um genau ${Math.abs(e)} Stellen nach ${e > 0 ? 'links' : 'rechts'}. Vor dem Komma dürfen hier auch mehrere Ziffern stehen.`,
       sol: [`Komma um ${Math.abs(e)} Stellen nach ${e > 0 ? 'links' : 'rechts'}: ${fmt(lead)}`, `${fmt(n)} = ${fmt(lead)} · ${tenPow(e)}`]
@@ -421,12 +422,12 @@ const G = {
       { txt: 'Eine Lackschicht auf dem Bootsrumpf ist', v: pick([0.08, 0.05, 0.06]), was: 'dick', to: 'nm', name: 'Nanometer', e: 6 },
       { txt: 'Ein Regentropfen hat', v: pick([2, 3, 4]), was: 'Durchmesser', to: 'nm', name: 'Nanometer', e: 6 }
     ]);
-    const f = Math.pow(10, c.e), res = Number((c.v * f).toPrecision(8)), pe = c.to === 'µm' ? -6 : -9;
+    const f = Math.pow(10, c.e), res = Number((c.v * f).toPrecision(8)), pe = c.to === 'µm' ? 6 : 9;
     return {
       title: 'Kleine Größen', q: `${c.txt} <b>${fmt(c.v)} mm</b> ${c.was === 'dick' ? 'dick' : c.was}. Gib das in <b>${c.to}</b> (${c.name}) an.<br><small class="muted">Nutze die Tabelle mit den Vorsilben.</small>`,
       sketch: vorsilbenTabelle(['m', c.to[0]]), type: 'num', ans: res, post: c.to,
-      hint: `Milli bedeutet 10<sup>−3</sup>, ${c.name.replace('meter', '')} bedeutet 10<sup>${pe}</sup>. Der Unterschied sind ${c.e} Stellen, also 1 mm = ${fmt(f)} ${c.to}.`,
-      sol: [`1 mm = 10<sup>−3</sup> m &nbsp; und &nbsp; 1 ${c.to} = 10<sup>${pe}</sup> m`, `Unterschied: ${c.e} Zehnerstellen → 1 mm = 10<sup>${c.e}</sup> ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)} ${c.to}`]
+      hint: `Aus der Tabelle: 1 m = 10<sup>3</sup> mm und 1 m = 10<sup>${pe}</sup> ${c.to}. Wie viele ${c.to} passen dann in 1 mm?`,
+      sol: [`1 m = 10<sup>3</sup> mm = ${fmt(1000)} mm &nbsp; und &nbsp; 1 m = 10<sup>${pe}</sup> ${c.to} = ${fmt(Math.pow(10, pe))} ${c.to}`, `1 mm = ${fmt(Math.pow(10, pe))} : ${fmt(1000)} ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)} ${c.to}`]
     };
   },
 
