@@ -253,16 +253,6 @@ function skFigur(cells, label) {
   const rects = cells.map(([x, y]) => `<rect x="${20 + x * s}" y="${20 + y * s}" width="${s}" height="${s}" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>`).join('');
   return svgWrap(w, h, rects + `<text x="${w / 2}" y="${h - 12}" text-anchor="middle" font-size="16" font-weight="600" fill="#1d2b36">${label}</text>`);
 }
-function skKaro(p, q) {
-  const n = p + q, s = Math.min(34, 200 / n), o = 14, size = n * s + 2 * o;
-  let g = '';
-  for (let i = 0; i <= n; i++) {
-    g += `<line x1="${o}" y1="${o + i * s}" x2="${o + n * s}" y2="${o + i * s}" stroke="#cbd5e1"/>`;
-    g += `<line x1="${o + i * s}" y1="${o}" x2="${o + i * s}" y2="${o + n * s}" stroke="#cbd5e1"/>`;
-  }
-  const P = [[p, 0], [n, p], [q, n], [0, q]].map(([x, y]) => `${o + x * s},${o + y * s}`).join(' ');
-  return svgWrap(size, size, g + `<polygon points="${P}" fill="rgba(37,99,235,.18)" stroke="#2563eb" stroke-width="3"/>`);
-}
 function skZweiQuadrate(A1, A2, s1, s2) {
   const k = 150 / (s1 + s2), a = s1 * k, b = s2 * k, base = 30 + Math.max(a, b);
   return svgWrap(240, base + 50, `
@@ -608,16 +598,18 @@ const G = {
       sol: [`${sq(m * m * k)} = ${sq(`${m * m} · ${k}`)}`, `= ${sq(m * m)} · ${sq(k)}`, `= ${surd(m, k)}`]
     };
   },
-  karoQuadrat() {
-    let p, q; do { p = R(1, 4); q = R(1, 4); } while (p + q < 3);
-    const A = p * p + q * q, n = p + q;
+  quadratWurzelterm() {
+    let m, k; do { m = R(2, 6); k = pick([2, 3, 5, 6, 7]); } while (m * m * k > 200);
+    const A = m * m * k;
+    const ctx = pick(['Ein quadratisches Sonnendeck auf dem Steg', 'Eine quadratische Liegewiese am Ufer', 'Ein quadratisches Segeltuch für das Bootsdach']);
     return {
-      title: 'Schräges Quadrat im Karonetz', q: `Ein Bojenfeld ist als schräges Quadrat im Karonetz gezeichnet (1 Kästchen = 1 km²). Wie lang ist eine Seite?<br><small class="muted">Trage die Zahl unter der Wurzel ein.</small>`,
-      sketch: skKaro(p, q), type: 'num', ans: A, pre: 'Seite = √', post: 'km',
-      hint: `Bestimme zuerst den Flächeninhalt: großes Quadrat (${n} · ${n} Kästchen) minus die vier Dreiecke in den Ecken.`,
-      sol: [`Großes Quadrat: ${n} · ${n} = ${n * n} Kästchen`, `Vier Dreiecke: 4 · (${p} · ${q} : 2) = ${2 * p * q} Kästchen`, `Schräges Quadrat: ${n * n} − ${2 * p * q} = ${A} Kästchen`, `Seite = ${sq(A)} km` + (Number.isInteger(Math.sqrt(A)) ? ` = ${Math.sqrt(A)} km` : '')]
+      title: 'Quadratseite als Wurzelterm', q: `${ctx} hat den Flächeninhalt <b>${A} m²</b>. Gib die Seitenlänge als vereinfachten Wurzelterm an.`,
+      sketch: skQuadrat(`A = ${A} m²`), type: 'surd', c: m, r: k, post: 'm',
+      hint: `Die Seite ist a = ${sq(A)}. ${A} ist keine Quadratzahl – zerlege ${A} in eine Quadratzahl mal eine Restzahl und ziehe teilweise die Wurzel.`,
+      sol: [`a = ${sq(A)} = ${sq(`${m * m} · ${k}`)}`, `= ${sq(m * m)} · ${sq(k)} = ${surd(m, k)} m`]
     };
   },
+
   wuerfelOberflaeche() {
     const a = pick([R(2, 15), R(12, 49) / 10, 1.5, 2.5]), O = Number((6 * a * a).toPrecision(10));
     return {
@@ -726,8 +718,8 @@ const RACES = [
     gens: ['sciExp', 'sciVoll', 'sciZuruck', 'technisch', 'einheiten', 'sciExp', 'sciVoll'] },
   { name: 'Bodensee-Woche', sub: 'Quadrat- und Kubikwurzeln, Quadrate und Würfel', n: 7, soll: 14 * 60,
     gens: ['wurzelGanz', 'wurzelDez', 'einschachteln', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate'] },
-  { name: 'Rund um die Höri', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
-    gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'wuerfelGebilde'] },
+  { name: 'Rund um die Höri', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, Würfelkörper', n: 8, soll: 22 * 60,
+    gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'quadratWurzelterm', 'wuerfelOberflaeche', 'teilweise', 'wuerfelGebilde'] },
   { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 30 * 60,
     must: ['teilweiseZusammen', 'teilweiseZusammen'],   // kommt in jedem Rennen genau zweimal vor
     gens: ['zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'gebildeOberflaeche'] }
@@ -1061,7 +1053,7 @@ function startRace(lvl) {
 // Taschenrechner erlaubt überall dort, wo sonst schriftliches Rechnen die Zeit frisst.
 // Ohne Taschenrechner nur, wo die Regel bzw. das Kopfwissen selbst geübt wird und die Zahlen klein bleiben.
 const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'figurQuadrate',
-  'karoQuadrat', 'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel', 'wuerfelGebilde', 'gebildeOberflaeche']);
+  'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel', 'wuerfelGebilde', 'gebildeOberflaeche']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
 function nextTask() {
   if (st.pauseStart) { st.paused += Date.now() - st.pauseStart; st.pauseStart = null; }
