@@ -118,7 +118,7 @@ sup{font-size:.7em}
     <div class="card">
       <h1 style="margin-bottom:0">⛵ Wurzel-Regatta</h1>
       <p class="muted" style="margin:.1rem 0 .6rem;font-weight:600">Hochzahlen und Wurzeln auf dem Untersee</p>
-      <p>Segle auf dem Untersee fünf Regatten – von der Clubregatta bis zur Bodensee-Meisterschaft. An jeder Boje wartet eine Aufgabe zu <b>Potenzen</b> und <b>Wurzeln</b>. Richtig gelöst? Dann rundest du die Boje. Falsch? Dann musst du einen <b>Strafkringel</b> segeln!</p>
+      <p>Segle beim <b>Gaienhofener Schlosscup</b> fünf Regatten auf dem Untersee – von der Clubregatta bis zur Bodensee-Meisterschaft. An jeder Boje wartet eine Aufgabe zu <b>Potenzen</b> und <b>Wurzeln</b>. Richtig gelöst? Dann rundest du die Boje. Falsch? Dann musst du einen <b>Strafkringel</b> segeln!</p>
       <label>Gestalte dein Boot</label>
       <div class="werft">
         <div class="preview" id="boatPreview"></div>
@@ -154,7 +154,7 @@ sup{font-size:.7em}
 
 <!-- ============ REGATTEN ============ -->
 <section id="vRaces" class="hidden">
-  <div class="bar"><h1 style="margin:0">Regattakalender</h1><span class="spacer"></span><button id="backStart">← Boot & Spickzettel</button></div>
+  <div class="bar"><div><div class="qtitle">Regattakalender</div><h1 style="margin:0">🏰 Gaienhofener Schlosscup</h1></div><span class="spacer"></span><button id="backStart">← Boot & Spickzettel</button></div>
   <div class="races" id="raceList"></div>
 </section>
 
@@ -636,7 +636,7 @@ const RACES = [
     gens: ['sciExp', 'sciVoll', 'sciZuruck', 'technisch', 'einheiten', 'sciExp', 'sciVoll'] },
   { name: 'Bodensee-Woche', sub: 'Quadrat- und Kubikwurzeln, Quadrate und Würfel', n: 7, soll: 14 * 60,
     gens: ['wurzelGanz', 'wurzelDez', 'einschachteln', 'quadratFlaeche', 'wuerfelVolumen', 'kubikwurzel', 'figurQuadrate'] },
-  { name: 'Rund um die Reichenau', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
+  { name: 'Rund um die Höri', sub: 'Wurzelgesetze, teilweise Wurzel ziehen, schräge Quadrate', n: 8, soll: 22 * 60,
     gens: ['wurzelProdukt', 'wurzelQuotient', 'zusammenfassen', 'teilweise', 'karoQuadrat', 'wuerfelOberflaeche', 'teilweise', 'figurQuadrate'] },
   { name: 'Bodensee-Meisterschaft', sub: 'Meisterklasse: mehrere Schritte verknüpfen', n: 8, soll: 30 * 60,
     gens: ['teilweiseZusammen', 'zweiQuadrate', 'dreiTerme', 'quadratUmfang', 'wuerfelKette', 'klammerWurzel', 'rechteckWurzel', 'sciProdukt', 'teilweiseZusammen'] }
@@ -1016,7 +1016,7 @@ function finish(dnf = false) {
       <button id="rAgain">Nochmal segeln</button>
       ${hasNext ? '<button class="primary" id="rNext">Nächste Regatta ➜</button>' : ''}
       <button id="rList">Regattakalender</button></div>
-    ${!dnf && st.lvl + 1 === RACES.length ? '<p style="margin-top:14px">🏆 Du hast die Bodensee-Meisterschaft gesegelt – Respekt, Skipper!</p>' : ''}`;
+    ${!dnf && st.lvl + 1 === RACES.length ? '<p style="margin-top:14px">🏆 Du hast alle fünf Regatten des Gaienhofener Schlosscups gesegelt – Respekt, Skipper!</p>' : ''}`;
   $('rAgain').onclick = () => startRace(st.lvl);
   if (hasNext) $('rNext').onclick = () => startRace(st.lvl + 1);
   $('rList').onclick = () => { renderRaces(); show('vRaces'); };
