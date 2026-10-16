@@ -110,7 +110,7 @@ sup{font-size:.7em}
 .rt{white-space:nowrap}
 .rt .rad{border-top:1.5px solid currentColor;padding:0 .12em;margin-left:.05em}
 .vorsilben{border-collapse:collapse;width:100%;font-size:.95rem;margin-bottom:4px}
-.vorsilben th,.vorsilben td{border:1px solid var(--line);padding:3px 8px;text-align:left}
+.vorsilben th,.vorsilben td{border:1px solid var(--line);padding:3px 6px;text-align:left;white-space:nowrap}
 .vorsilben th{background:var(--soft);font-size:.82rem}
 .vorsilben tr.mark td{background:#fff3c4;font-weight:700}
 .waiting{color:var(--muted);font-style:italic;text-align:center;padding:16px}
@@ -427,8 +427,8 @@ const G = {
     return {
       title: 'Kleine Größen', q: `${c.txt} <b>${fmt(c.v)} m</b> ${c.was}. Gib das in <b>${c.to}</b> (${c.name}) an.<br><small class="muted">Nutze die Tabelle mit den Vorsilben.</small>`,
       sketch: vorsilbenTabelle([c.to[0]]), type: 'num', ans: res, post: c.to,
-      hint: `Aus der Tabelle: 1 m = 10<sup>${c.e}</sup> ${c.to}. Du rechnest also mal 10<sup>${c.e}</sup> – das Komma rückt ${c.e} Stellen nach rechts.`,
-      sol: [`1 m = 10<sup>${c.e}</sup> ${c.to} = ${fmt(f)} ${c.to}`, `${fmt(c.v)} · ${fmt(f)} = ${fmt(res)}`, `${c.txt} ${fmt(res)} ${c.to} ${c.was}.`]
+      hint: `${c.name.replace('meter', '')} steht für 10<sup>${c.e}</sup> (1 m = 10<sup>${c.e}</sup> ${c.to}). Schreib die Zehnerpotenz einfach dazu: ${fmt(c.v)} m = ${fmt(c.v)} · 10<sup>${c.e}</sup> ${c.to}. Dann ausrechnen – das Komma rückt ${c.e} Stellen nach rechts.`,
+      sol: [`Zehnerpotenz aus der Tabelle dazuschreiben: ${fmt(c.v)} m = ${fmt(c.v)} · 10<sup>${c.e}</sup> ${c.to}`, `= ${fmt(c.v)} · ${fmt(f)} ${c.to}`, `= ${fmt(res)} ${c.to} (Komma ${c.e} Stellen nach rechts)`]
     };
   },
 
