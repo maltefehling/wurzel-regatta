@@ -78,6 +78,8 @@ ul.tight li{margin:.2rem 0}
   50%{transform:translate(0,26px) scaleX(-1)}
   75%{transform:translate(-22px,14px) scaleX(-.2)}
   100%{transform:translate(0,0) scaleX(1)}}
+.flagwehen{animation:wehen 1.4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left center}
+@keyframes wehen{from{transform:skewY(-4deg) scaleX(1)}to{transform:skewY(4deg) scaleX(.9)}}
 .wave{animation:wave 3s ease-in-out infinite alternate}
 @keyframes wave{from{transform:translateX(-8px)}to{transform:translateX(8px)}}
 .buoy.done .buoytop{fill:#2e8b57}
@@ -961,6 +963,11 @@ function shoreSVG() {
     <rect x="503.5" y="26" width="1.4" height="9" fill="#64748b"/><rect x="506" y="26" width="1.4" height="9" fill="#64748b"/><rect x="508.5" y="26" width="1.4" height="9" fill="#64748b"/>
     <circle cx="506.5" cy="42" r="3" fill="#f8fafc" stroke="#334155" stroke-width=".7"/>
     <path d="M506.5 42 V40 M506.5 42 H508" stroke="#334155" stroke-width=".6"/>
+    <!-- Fahnenmast auf dem Turm: bei falscher Antwort wird eine schwarze Flagge gehisst -->
+    <line x1="506.5" y1="21" x2="506.5" y2="0" stroke="#475569" stroke-width="1.3"/>
+    <g id="flagge" style="transition:transform 1.2s ease-out,opacity .4s;transform:translateY(12px);opacity:0">
+      <path class="flagwehen" d="M507.2 1 h15 l-3.5 5 l3.5 5 h-15 Z" fill="#111827"/>
+    </g>
     <!-- Schloss Gaienhofen: Hauptbau mit steilem rotem Satteldach -->
     <rect x="516" y="82" width="16" height="12" fill="#9a968a"/>
     <rect x="528" y="57" width="60" height="37" fill="#fbfbf8" stroke="#9ca3af" stroke-width=".8"/>
@@ -1055,7 +1062,13 @@ function startRace(lvl) {
 const MIT_TR = new Set(['exponent', 'groesstePotenz', 'quadratFlaeche', 'wuerfelVolumen', 'figurQuadrate',
   'wuerfelOberflaeche', 'wuerfelKette', 'rechteckWurzel', 'wuerfelGebilde', 'gebildeOberflaeche']);
 function genFor(i) { const name = st.order[i % st.order.length], t = G[name](); t.tr = MIT_TR.has(name); return t; }
+function flagge(hoch) {
+  const f = $('flagge'); if (!f) return;
+  f.style.opacity = hoch ? '1' : '0';
+  f.style.transform = hoch ? 'translateY(0)' : 'translateY(12px)';
+}
 function nextTask() {
+  flagge(false);
   if (st.pauseStart) { st.paused += Date.now() - st.pauseStart; st.pauseStart = null; }
   st.task = genFor(st.i); st.busy = false; st.hintShown = false;
   renderTask();
@@ -1139,7 +1152,7 @@ function submit(mcVal) {
       else { moveBoat(buoyX(st.i, r.n) - 70); $('taskCard').innerHTML = `<div class="waiting">Weiter zur Boje ${st.i + 1} …</div>`; setTimeout(nextTask, 1600); }
     }, 1300);
   } else {
-    st.kringel++; st.penalty += 20; st.pauseStart = Date.now(); updateBar(); kringelAnim(); sfx('bad');
+    st.kringel++; st.penalty += 20; st.pauseStart = Date.now(); updateBar(); kringelAnim(); sfx('bad'); flagge(true);
     const sol = `<ol class="sol">${t.sol.map(s => `<li>${s}</li>`).join('')}</ol>`;
     if (st.kringel > MAX_KRINGEL) {
       $('fb').innerHTML = `<div class="fb bad">❌ Leider falsch. So geht's:${sol}</div><div class="btns"><button class="primary" id="dnf">Weiter</button></div>`;
